@@ -202,6 +202,15 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
 }
 .lp3-pricing-select:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
 .lp3-pricing-select option { background: var(--bg-panel-2); color: var(--ink); }
+.lp3-pricing-email-wrap { text-align: right; margin: 0 0 20px; }
+.lp3-pricing-email {
+  width: 100%; box-sizing: border-box; font-family: var(--body); font-size: 15px; font-weight: 600; color: var(--ink);
+  background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.22); border-radius: 12px;
+  padding: 13px 16px; color-scheme: dark; direction: ltr; text-align: right;
+}
+.lp3-pricing-email::placeholder { color: var(--muted); font-weight: 500; }
+.lp3-pricing-email:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+.lp3-pricing-email-error { color: #ffb4a2; font-size: 13px; font-weight: 600; margin: 8px 0 0; }
 .lp3-pricing-price { font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--orange); margin: 16px 0 0; }
 .lp3-pricing-note { font-size: 12px; color: var(--muted); margin: 16px 0 0; }
 .lp3-pricing-contact { font-size: 13px; color: var(--muted-soft); margin: 18px 0 0; }
@@ -333,7 +342,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     <p class="lp3-hero__sub reveal reveal-d2">במקום לשחק עוד משחק, משחקים את המשחק המשפחתי שלכם — עם האנשים, התמונות, הסיפורים והדברים שרק אתם מכירים. בוחרים משחק, מכניסים את התוכן שלכם — והמשחק מוכן לערב משפחתי מלא בצחוקים, ניחושים וזיכרונות.</p>
     <div class="lp3-hero__ctas reveal reveal-d3">
       <a href="#games" class="lp3-btn lp3-btn--primary"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M8 5m0 2a2 2 0 0 1 2 -2h9a2 2 0 0 1 2 2v9a2 2 0 0 1 -2 2h-9a2 2 0 0 1 -2 -2z" /><path d="M16 16v1a2 2 0 0 1 -2 2h-9a2 2 0 0 1 -2 -2v-9a2 2 0 0 1 2 -2h1" /></svg> לצפייה במשחקים</a>
-      <a href="#pricing" class="lp3-btn lp3-btn--ghost"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg> עדכנו אותי בהשקה</a>
+      <a href="#pricing" class="lp3-btn lp3-btn--ghost"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M10 5a2 2 0 1 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" /><path d="M9 17v1a3 3 0 0 0 6 0v-1" /></svg> לרכישה</a>
     </div>
   </section>
 
@@ -523,6 +532,11 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         </select>
       </div>
       <p id="game-select-price" class="lp3-pricing-price" hidden></p>
+      <div class="lp3-pricing-email-wrap">
+        <label for="buyer-email" class="lp3-pricing-label">כתובת המייל שלכם (חובה — לשם נשלח המשחק)</label>
+        <input type="email" id="buyer-email" class="lp3-pricing-email" placeholder="name@example.com" autocomplete="email" inputmode="email" required aria-describedby="buyer-email-error">
+        <p id="buyer-email-error" class="lp3-pricing-email-error" role="alert" hidden></p>
+      </div>
       <a href="#" id="pay-button" class="lp3-btn lp3-btn--primary lp3-btn--block"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M3 10l18 0" /><path d="M7 15l.01 0" /><path d="M11 15l2 0" /></svg> לעבור לתשלום</a>
       <p class="lp3-pricing-note">מיד אחרי התשלום תקבלו קישור למשחק וקוד גישה במייל.</p>
       <p class="lp3-pricing-contact">יש לכם שאלות? <a href="mailto:r.v3217796@gmail.com">r.v3217796@gmail.com</a></p>
@@ -539,6 +553,10 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   var select = document.getElementById('game-select-3');
   var priceEl = document.getElementById('game-select-price');
   var payBtn = document.getElementById('pay-button');
+  var emailEl = document.getElementById('buyer-email');
+  var emailErr = document.getElementById('buyer-email-error');
+  var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
+  emailEl.addEventListener('input', function () { emailErr.hidden = true; });
 
   function selectedOption() {
     return select.options[select.selectedIndex];
@@ -577,10 +595,19 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       select.style.outline = '2px solid #ff6a21';
       return;
     }
+    var email = emailEl.value.trim();
+    if (!EMAIL_RE.test(email)) {
+      emailErr.textContent = email ? 'כתובת המייל לא נראית תקינה — בדקו אותה שוב.' : 'חובה להזין כתובת מייל — אליה נשלח המשחק.';
+      emailErr.hidden = false;
+      emailEl.focus();
+      return;
+    }
+    emailErr.hidden = true;
     var redirectUrl = window.location.origin + window.location.pathname;
     var url = PAY_BASE + '?mosad=' + MOSAD +
       '&Amount=' + encodeURIComponent(price) + '&AmountLock=1' +
       '&Groupe=' + encodeURIComponent(game) + '&GroupeLock=1' +
+      '&Email=' + encodeURIComponent(email) +
       '&Redirect=' + encodeURIComponent(redirectUrl);
     window.location.href = url;
   });
