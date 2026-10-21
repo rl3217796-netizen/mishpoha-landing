@@ -87,6 +87,18 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
 .lp3-btn--sm { padding: 9px 18px; font-size: 13px; }
 .lp3-btn--block { width: 100%; justify-content: center; }
 
+/* ---------- free-game banner ---------- */
+.lp3-free-banner {
+  position: relative; z-index: 2; display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 6px 12px;
+  padding: 12px 6vw; text-align: center; text-decoration: none; color: #fff; font-size: 15px; font-weight: 600; line-height: 1.5;
+  background: linear-gradient(97deg, var(--orange-deep), var(--orange) 45%, var(--purple));
+}
+.lp3-free-banner strong { font-weight: 800; }
+.lp3-free-banner__cta { display: inline-flex; align-items: center; gap: 6px; font-size: 13.5px; font-weight: 800; background: rgba(21,12,32,0.35); border: 1px solid rgba(255,255,255,0.45); border-radius: 999px; padding: 5px 14px; white-space: nowrap; }
+.lp3-free-banner:hover .lp3-free-banner__cta { background: rgba(21,12,32,0.55); }
+.lp3-free-banner:focus-visible { outline: 2px solid #fff; outline-offset: -4px; }
+.lp3-free-banner svg { flex: none; }
+
 /* ---------- hero (real logo, centered) ---------- */
 .lp3-hero { position: relative; z-index: 1; padding: 60px 7vw 36px; text-align: center; }
 .lp3-eyebrow {
@@ -354,6 +366,12 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     </div>
     <a href="#pricing" class="lp3-btn lp3-btn--primary lp3-btn--sm lp3-nav__cta">בואו נתחיל</a>
   </nav>
+
+  <a href="#pricing" class="lp3-free-banner" data-free-cta>
+    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 8m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1z" /><path d="M12 8l0 13" /><path d="M19 12v7a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-7" /><path d="M7.5 8a2.5 2.5 0 0 1 0 -5a4.8 8 0 0 1 4.5 5a4.8 8 0 0 1 4.5 -5a2.5 2.5 0 0 1 0 5" /></svg>
+    <span>מתנה מאיתנו: המשחק <strong>"במילים אחרות"</strong> — בחינם!</span>
+    <span class="lp3-free-banner__cta">לקבלת המשחק ←</span>
+  </a>
 
   <section class="lp3-hero">
     <span class="lp3-eyebrow reveal reveal-pop"><svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M16 18a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2m0 -12a2 2 0 0 1 2 2a2 2 0 0 1 2 -2a2 2 0 0 1 -2 -2a2 2 0 0 1 -2 2m-7 12a6 6 0 0 1 6 -6a6 6 0 0 1 -6 -6a6 6 0 0 1 -6 6a6 6 0 0 1 6 6" /></svg> המשחקים שכל המשפחה מחכה להם</span>
@@ -675,6 +693,15 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   document.querySelectorAll('.lp3-game__pick').forEach(function (btn) {
     btn.addEventListener('click', function () {
       select.value = btn.getAttribute('data-game');
+      updatePrice();
+      document.getElementById('pricing').scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  });
+
+  document.querySelectorAll('[data-free-cta]').forEach(function (link) {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      select.value = 'במילים אחרות';
       updatePrice();
       document.getElementById('pricing').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
