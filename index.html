@@ -617,7 +617,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <span>אני מאשר/ת לקבל מהמשפוחה דיוור במייל — עדכונים, משחקים חדשים ומבצעים. אפשר להסיר את עצמכם בכל עת.</span>
       </label>
       <input type="text" id="free-hp" class="lp3-pricing-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
-      <a href="#" id="pay-button" class="lp3-btn lp3-btn--primary lp3-btn--block"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M3 10l18 0" /><path d="M7 15l.01 0" /><path d="M11 15l2 0" /></svg> <span id="pay-label">לעבור לתשלום</span></a>
+      <a href="#" id="pay-button" class="lp3-btn lp3-btn--primary lp3-btn--block"><span id="pay-icon-card" style="display:inline-flex"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5m0 2a2 2 0 0 1 2 -2h14a2 2 0 0 1 2 2v10a2 2 0 0 1 -2 2h-14a2 2 0 0 1 -2 -2z" /><path d="M3 10l18 0" /><path d="M7 15l.01 0" /><path d="M11 15l2 0" /></svg></span><span id="pay-icon-gift" style="display:none"><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8m0 1a1 1 0 0 1 1 -1h16a1 1 0 0 1 1 1v2a1 1 0 0 1 -1 1h-16a1 1 0 0 1 -1 -1z" /><path d="M12 8l0 13" /><path d="M19 12v7a2 2 0 0 1 -2 2h-10a2 2 0 0 1 -2 -2v-7" /><path d="M7.5 8a2.5 2.5 0 0 1 0 -5a4.8 8 0 0 1 4.5 5a4.8 8 0 0 1 4.5 -5a2.5 2.5 0 0 1 0 5" /></svg></span> <span id="pay-label">לעבור לתשלום</span></a>
       <p id="free-done" class="lp3-pricing-done" role="status" hidden></p>
       <p class="lp3-pricing-note" id="pricing-note">מיד אחרי התשלום תקבלו קישור למשחק וקוד גישה במייל.</p>
       <p class="lp3-pricing-contact">יש לכם שאלות? <a href="mailto:r.v3217796@gmail.com">r.v3217796@gmail.com</a></p>
@@ -663,8 +663,10 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     consentWrap.hidden = !free;
     doneEl.hidden = true;
     payLabel.textContent = free ? 'שלחו לי את המשחק בחינם' : 'לעבור לתשלום';
+    document.getElementById('pay-icon-card').style.display = free ? 'none' : 'inline-flex';
+    document.getElementById('pay-icon-gift').style.display = free ? 'inline-flex' : 'none';
     noteEl.textContent = free
-      ? 'המשחק וקוד הגישה יישלחו מיד למייל שהזנתם.'
+      ? 'המשחק יישלח מיד למייל שהזנתם — בלי סיסמה, פותחים ומשחקים.'
       : 'מיד אחרי התשלום תקבלו קישור למשחק וקוד גישה במייל.';
     if (free) {
       priceEl.textContent = 'מחיר: חינם';
@@ -753,7 +755,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, data: d }; }); })
       .then(function (res) {
         if (res.data.ok) {
-          doneEl.textContent = 'נשלח! המשחק וקוד הגישה בדרך למייל ' + email + '. לא מוצאים? בדקו גם בתיקיית הספאם/קידומי מכירות.';
+          doneEl.textContent = 'נשלח! המשחק בדרך למייל ' + email + '. לא מוצאים? בדקו גם בתיקיית הספאם/קידומי מכירות.';
           doneEl.hidden = false;
         } else if (res.status === 429) {
           showFreeError('נשלחו יותר מדי בקשות. נסו שוב בעוד שעה.');
