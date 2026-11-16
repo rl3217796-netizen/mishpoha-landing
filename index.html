@@ -71,6 +71,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
 .lp3-nav__cta { display: none; }
 @media (min-width: 860px) { .lp3-nav__cta { display: inline-flex; } }
 @media (max-width: 760px) { .lp3-nav__links { display: none; } }
+.lp3-nav__ideas { display: none; font-size: 13px; font-weight: 600; color: var(--ink); text-decoration: none; padding: 7px 13px; border-radius: 999px; border: 1px solid rgba(255,255,255,.22); }
+@media (max-width: 760px) { .lp3-nav__ideas { display: inline-flex; } }
 
 /* ---------- buttons ---------- */
 .lp3-btn {
@@ -403,9 +405,11 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     <div class="lp3-nav__links">
       <a href="#about">מה זו המשפוחה</a>
       <a href="#games">המשחקים</a>
+      <a href="ideas.html">רעיונות למשחקים</a>
       <a href="#faq">שאלות נפוצות</a>
       <a href="#refer">ממליצים ומרוויחים</a>
     </div>
+    <a href="ideas.html" class="lp3-nav__ideas">רעיונות למשחקים</a>
     <a href="#pricing" class="lp3-btn lp3-btn--primary lp3-btn--sm lp3-nav__cta">בואו נתחיל</a>
   </nav>
 
