@@ -246,6 +246,47 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
 .lp3-pricing-price { font-family: var(--display); font-weight: 800; font-size: 22px; color: var(--orange); margin: 16px 0 0; }
 .lp3-pricing-note { font-size: 12px; color: var(--muted); margin: 16px 0 0; }
 .lp3-pricing-contact { font-size: 13px; color: var(--muted-soft); margin: 18px 0 0; }
+.lp3-credit { text-align: right; margin: -6px 0 20px; }
+.lp3-credit__toggle { background: none; border: 0; padding: 0; font: 600 13.5px var(--body); color: var(--muted-soft); text-decoration: underline; cursor: pointer; }
+.lp3-credit__row { display: flex; gap: 8px; margin-top: 10px; }
+.lp3-credit__row input { flex: 1; min-width: 0; text-transform: uppercase; letter-spacing: .08em; direction: ltr; text-align: center; }
+.lp3-credit__row button { flex: none; border: 1px solid var(--line); border-radius: 12px; padding: 0 18px; background: rgba(255,255,255,0.08); color: inherit; font: 700 14px var(--body); cursor: pointer; }
+.lp3-credit__msg { font-size: 13.5px; margin: 8px 0 0; line-height: 1.5; }
+.lp3-credit__msg.is-ok { color: #b9f3d6; } .lp3-credit__msg.is-bad { color: #ffb4a2; }
+.lp3-pricing-price { margin-bottom: 16px; }
+.lp3-pricing-price s { color: var(--muted); font-weight: 600; font-size: .75em; margin-left: 8px; }
+.lp3-refer-tab {
+  position: fixed; z-index: 30; left: 0; top: 46%; transform: translateY(-50%);
+  display: flex; flex-direction: row; align-items: center; gap: 10px;
+  padding: 16px 10px 16px 9px; border: 0; border-radius: 0 16px 16px 0; cursor: pointer;
+  background: linear-gradient(180deg, var(--orange), var(--purple)); color: #fff;
+  font: 800 14.5px var(--body); text-decoration: none; writing-mode: vertical-rl;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.45), 0 0 0 1px rgba(255,255,255,0.18) inset;
+  transition: transform .3s ease, opacity .3s ease, padding .2s ease;
+}
+.lp3-refer-tab:hover { padding-left: 14px; }
+.lp3-refer-tab__icon { writing-mode: horizontal-tb; font-size: 20px; line-height: 1; animation: lp3-gift 3.2s ease-in-out infinite; }
+.lp3-refer-tab__pct { writing-mode: horizontal-tb; font-size: 12px; font-weight: 800; background: rgba(21,12,32,0.35); border-radius: 999px; padding: 3px 7px; }
+.lp3-refer-tab.is-away { transform: translate(-110%, -50%); opacity: 0; pointer-events: none; }
+/* The vertical label reads bottom to top: keep the gift on top, the 10% at the bottom. */
+.lp3-refer-tab__pct { order: 0; } .lp3-refer-tab > span:nth-child(2) { order: 1; } .lp3-refer-tab__icon { order: 2; }
+@keyframes lp3-gift { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-14deg) scale(1.15); } 90% { transform: rotate(12deg) scale(1.15); } 95% { transform: rotate(-6deg); } }
+@media (max-width: 760px) {
+  .lp3-refer-tab { top: auto; bottom: 16px; left: 12px; transform: none; writing-mode: horizontal-tb; flex-direction: row; gap: 7px; padding: 10px 14px; border-radius: 999px; font-size: 13.5px; }
+  .lp3-refer-tab:hover { padding-left: 14px; }
+  .lp3-refer-tab.is-away { transform: translateY(140%); }
+  .lp3-refer-tab__icon { font-size: 17px; }
+  .lp3-refer-tab__pct, .lp3-refer-tab > span:nth-child(2), .lp3-refer-tab__icon { order: 0; }
+}
+@media (prefers-reduced-motion: reduce) { .lp3-refer-tab__icon { animation: none; } .lp3-refer-tab { transition: none; } }
+.lp3-refer-perks { list-style: none; padding: 0; margin: 0 0 22px; display: grid; gap: 10px; text-align: right; }
+.lp3-refer-perks li { display: flex; gap: 12px; align-items: center; padding: 12px 16px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid var(--line); font-size: 15px; line-height: 1.5; }
+.lp3-refer-perks b { flex: none; min-width: 64px; text-align: center; font-family: var(--display); font-size: 20px; color: var(--orange); }
+.lp3-refer-link { display: flex; gap: 8px; margin: 0 0 10px; }
+.lp3-refer-link input { flex: 1; min-width: 0; direction: ltr; text-align: left; font-size: 14px; }
+.lp3-refer-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+.lp3-refer-actions > * { flex: 1 1 160px; }
+.lp3-refer-fine { font-size: 12px; color: var(--muted); margin: 18px 0 0; line-height: 1.6; }
 .lp3-pricing-contact a { color: var(--orange); }
 
 
@@ -363,6 +404,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       <a href="#about">מה זו המשפוחה</a>
       <a href="#games">המשחקים</a>
       <a href="#faq">שאלות נפוצות</a>
+      <a href="#refer">ממליצים ומרוויחים</a>
     </div>
     <a href="#pricing" class="lp3-btn lp3-btn--primary lp3-btn--sm lp3-nav__cta">בואו נתחיל</a>
   </nav>
@@ -638,6 +680,14 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <input type="email" id="buyer-email" class="lp3-pricing-email" placeholder="name@example.com" autocomplete="email" inputmode="email" required aria-describedby="buyer-email-error">
         <p id="buyer-email-error" class="lp3-pricing-email-error" role="alert" hidden></p>
       </div>
+      <div class="lp3-credit" id="credit-box">
+        <button type="button" class="lp3-credit__toggle" id="credit-toggle" aria-expanded="false" aria-controls="credit-row">יש לכם קוד זיכוי?</button>
+        <div class="lp3-credit__row" id="credit-row" hidden>
+          <input type="text" id="credit-key" class="lp3-pricing-email" placeholder="קוד הזיכוי מהמייל" autocomplete="off" maxlength="12" aria-label="קוד זיכוי">
+          <button type="button" id="credit-apply">הפעלה</button>
+        </div>
+        <p class="lp3-credit__msg" id="credit-msg" role="status" hidden></p>
+      </div>
       <label class="lp3-pricing-consent" id="free-consent-wrap" hidden>
         <input type="checkbox" id="free-consent">
         <span>אני מאשר/ת לקבל מהמשפוחה דיוור במייל — עדכונים, משחקים חדשים ומבצעים. אפשר להסיר את עצמכם בכל עת.</span>
@@ -647,6 +697,42 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       <p id="free-done" class="lp3-pricing-done" role="status" hidden></p>
       <p class="lp3-pricing-note" id="pricing-note">מיד אחרי התשלום תקבלו קישור למשחק וקוד גישה במייל.</p>
       <p class="lp3-pricing-contact">יש לכם שאלות? <a href="mailto:r.v3217796@gmail.com">r.v3217796@gmail.com</a></p>
+    </div>
+  </section>
+
+  <a href="#refer" class="lp3-refer-tab" id="refer-tab" aria-label="ממליצים ומרוויחים: זיכוי של 10% על כל קנייה דרך הקישור שלכם">
+    <span class="lp3-refer-tab__icon" aria-hidden="true">🎁</span>
+    <span>ממליצים ומרוויחים</span>
+    <span class="lp3-refer-tab__pct" aria-hidden="true">10%</span>
+  </a>
+
+  <section class="lp3-section lp3-section--divider" id="refer">
+    <div class="lp3-pricing-card reveal-scale">
+      <h2 class="lp3-pricing-title" style="margin-bottom:8px">ממליצים ומרוויחים</h2>
+      <p class="lp3-sub" style="margin:0 auto 22px">אהבתם? שתפו משפחות אחרות וקבלו זיכוי על כל קנייה.</p>
+      <ul class="lp3-refer-perks">
+        <li><b>10%</b><span>זיכוי לקניות באתר על כל קנייה דרך הקישור שלכם</span></li>
+        <li><b>🎁</b><span>על כל 4 קניות דרך הקישור: משחק לבחירתכם במתנה</span></li>
+      </ul>
+      <div id="refer-form">
+        <div class="lp3-pricing-email-wrap">
+          <label for="refer-email" class="lp3-pricing-label">כתובת המייל שלכם</label>
+          <input type="email" id="refer-email" class="lp3-pricing-email" placeholder="name@example.com" autocomplete="email" inputmode="email" aria-describedby="refer-error">
+          <p id="refer-error" class="lp3-pricing-email-error" role="alert" hidden></p>
+        </div>
+        <input type="text" id="refer-hp" class="lp3-pricing-hp" name="website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="button" id="refer-go" class="lp3-btn lp3-btn--primary lp3-btn--block">קבלו את הקישור שלי</button>
+      </div>
+      <div id="refer-done" hidden>
+        <p class="lp3-pricing-label" style="text-align:right">הקישור האישי שלכם:</p>
+        <div class="lp3-refer-link"><input type="text" id="refer-link" class="lp3-pricing-email" readonly aria-label="הקישור האישי שלכם"></div>
+        <div class="lp3-refer-actions">
+          <button type="button" id="refer-copy" class="lp3-btn lp3-btn--primary">העתקת הקישור</button>
+          <a id="refer-wa" class="lp3-btn lp3-btn--ghost" target="_blank" rel="noopener">שליחה בוואטסאפ</a>
+        </div>
+        <p class="lp3-pricing-done">שלחנו לכם למייל את הקישור ואת קוד הזיכוי האישי שלכם. לא מוצאים? בדקו גם בתיקיית הספאם/קידומי מכירות.</p>
+      </div>
+      <p class="lp3-refer-fine">הזיכוי ניתן לשימוש לקניית משחקים באתר בלבד, ואינו ניתן להמרה לכסף. הזיכוי בתוקף ל-3 חודשים מיום שנצבר. קנייה דרך הקישור האישי שלכם אינה מזכה.</p>
     </div>
   </section>
 
@@ -663,6 +749,28 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   var emailErr = document.getElementById('buyer-email-error');
   var EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
   var FREE_URL = 'https://webhook.httpautomation.org/free/alias';
+  var AFF_BASE = 'https://webhook.httpautomation.org/aff/';
+  var REF_KEY = 'mishpoha-ref', REF_DAYS = 30;
+
+  /* Remember who sent this visitor (?ref=CODE) for 30 days. */
+  (function () {
+    var m = /[?&]ref=([A-Za-z0-9]{4,12})/.exec(window.location.search);
+    if (!m) return;
+    try { localStorage.setItem(REF_KEY, JSON.stringify({ code: m[1].toUpperCase(), at: Date.now() })); } catch (e) {}
+  })();
+  function currentRef() {
+    try {
+      var r = JSON.parse(localStorage.getItem(REF_KEY) || 'null');
+      if (r && r.code && Date.now() - r.at < REF_DAYS * 864e5) return r.code;
+    } catch (e) {}
+    return null;
+  }
+  function postJSON(url, body, ms) {
+    var ctl = window.AbortController ? new AbortController() : null;
+    var timer = ctl ? setTimeout(function () { ctl.abort(); }, ms || 8000) : 0;
+    return fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { clearTimeout(timer); return { status: r.status, data: d }; }); });
+  }
   var payLabel = document.getElementById('pay-label');
   var noteEl = document.getElementById('pricing-note');
   var consentWrap = document.getElementById('free-consent-wrap');
@@ -682,7 +790,51 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     return !!(opt && opt.hasAttribute('data-free'));
   }
 
-  function updatePrice() {
+  /* ---------- Credit code ---------- */
+  var creditToggle = document.getElementById('credit-toggle');
+  var creditRow = document.getElementById('credit-row');
+  var creditKey = document.getElementById('credit-key');
+  var creditMsg = document.getElementById('credit-msg');
+  var credit = null; // { key, use, toPay } once a code is applied to the selected game
+  creditToggle.addEventListener('click', function () {
+    var open = creditRow.hidden;
+    creditRow.hidden = !open;
+    creditToggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+    if (open) creditKey.focus();
+  });
+  function creditNote(text, good) {
+    creditMsg.textContent = text;
+    creditMsg.className = 'lp3-credit__msg ' + (good ? 'is-ok' : 'is-bad');
+    creditMsg.hidden = !text;
+  }
+  function applyCredit() {
+    var key = creditKey.value.trim().toUpperCase();
+    var opt = selectedOption();
+    credit = null;
+    if (!key) { creditNote('', true); updatePrice(true); return; }
+    if (!opt || opt.value === '' || isFree()) { creditNote('בחרו קודם משחק בתשלום.', false); return; }
+    creditNote('בודקים...', true);
+    postJSON(AFF_BASE + 'quote', { key: key, game: opt.value })
+      .then(function (res) {
+        if (res.data.ok && res.data.use > 0) {
+          credit = { key: key, use: res.data.use, toPay: res.data.toPay };
+          creditNote('הזיכוי הופעל: ' + res.data.use + ' ₪ (היתרה שלכם: ' + res.data.balance + ' ₪).', true);
+        } else if (res.data.ok) {
+          creditNote('הקוד תקין, אבל אין בו כרגע זיכוי פעיל.', false);
+        } else if (res.status === 404) {
+          creditNote('הקוד לא נמצא. בדקו שהעתקתם אותו נכון מהמייל.', false);
+        } else {
+          creditNote('לא הצלחנו לבדוק את הקוד כרגע. נסו שוב בעוד רגע.', false);
+        }
+        updatePrice(true);
+      })
+      .catch(function () { creditNote('אין חיבור כרגע. נסו שוב.', false); });
+  }
+  document.getElementById('credit-apply').addEventListener('click', applyCredit);
+  creditKey.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); applyCredit(); } });
+
+  function updatePrice(keepCredit) {
+    if (keepCredit !== true && credit) { credit = null; if (creditKey.value.trim()) setTimeout(applyCredit, 0); }
     var opt = selectedOption();
     var price = opt && opt.value !== '' ? opt.getAttribute('data-price') : null;
     var free = isFree();
@@ -697,6 +849,12 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     if (free) {
       priceEl.textContent = 'מחיר: חינם';
       priceEl.hidden = false;
+    } else if (price && credit) {
+      priceEl.innerHTML = '';
+      priceEl.appendChild(document.createTextNode('לתשלום: ' + credit.toPay + ' ₪ '));
+      var was = document.createElement('s'); was.textContent = price + ' ₪'; priceEl.appendChild(was);
+      priceEl.hidden = false;
+      if (credit.toPay === 0) payLabel.textContent = 'שלחו לי את המשחק';
     } else if (price) {
       priceEl.textContent = 'מחיר: ' + price + ' ₪';
       priceEl.hidden = false;
@@ -706,7 +864,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     select.style.outline = '';
   }
 
-  select.addEventListener('change', updatePrice);
+  select.addEventListener('change', function () { updatePrice(); });
   updatePrice();
 
   document.querySelectorAll('.lp3-game__info-btn').forEach(function (btn) {
@@ -754,13 +912,94 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     }
     emailErr.hidden = true;
     if (isFree()) { sendFree(email); return; }
+    if (sending) return;
+    sending = true;
+    payLabel.textContent = 'רגע...';
+    var usingCredit = !!credit;
+    /* Tell the server who referred this buyer and reserve any credit, then go to payment. */
+    postJSON(AFF_BASE + 'checkout', { email: email, game: game, ref: currentRef(), key: usingCredit ? credit.key : null }, 8000)
+      .then(function (res) {
+        if (res.data.ok && res.data.sent) {
+          sending = false; updatePrice(true);
+          payLabel.textContent = 'נשלח!';
+          doneEl.textContent = 'הזיכוי כיסה את כל המחיר, והמשחק נשלח למייל ' + email + '. לא מוצאים? בדקו גם בתיקיית הספאם/קידומי מכירות.';
+          doneEl.hidden = false;
+          credit = null; creditKey.value = ''; creditNote('', true);
+          return;
+        }
+        if (res.data.ok) return goPay(game, res.data.toPay, email);
+        if (usingCredit) throw new Error('credit');
+        goPay(game, price, email);
+      })
+      .catch(function () {
+        if (!usingCredit) return goPay(game, price, email);
+        sending = false; updatePrice(true);
+        creditNote('לא הצלחנו להפעיל את הזיכוי כרגע. נסו שוב בעוד רגע, או הסירו את הקוד ושלמו מחיר מלא.', false);
+      });
+  });
+
+  function goPay(game, amount, email) {
     var redirectUrl = window.location.origin + window.location.pathname;
-    var url = PAY_BASE + '?mosad=' + MOSAD +
-      '&Amount=' + encodeURIComponent(price) + '&AmountLock=1' +
+    window.location.href = PAY_BASE + '?mosad=' + MOSAD +
+      '&Amount=' + encodeURIComponent(amount) + '&AmountLock=1' +
       '&Groupe=' + encodeURIComponent(game) + '&GroupeLock=1' +
       '&Email=' + encodeURIComponent(email) +
       '&Redirect=' + encodeURIComponent(redirectUrl);
-    window.location.href = url;
+  }
+
+  /* ---------- Side tab: always visible, runs down to the referral section ---------- */
+  (function () {
+    var tab = document.getElementById('refer-tab');
+    var target = document.getElementById('refer');
+    tab.addEventListener('click', function (e) {
+      e.preventDefault();
+      target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(function () { try { document.getElementById('refer-email').focus({ preventScroll: true }); } catch (x) {} }, 700);
+    });
+    var hide = { refer: false, pricing: false };
+    function sync() { tab.classList.toggle('is-away', hide.refer || hide.pricing); }
+    if ('IntersectionObserver' in window) {
+      /* Step aside while the referral or payment form is on screen, so it never covers them. */
+      var io = new IntersectionObserver(function (es) {
+        es.forEach(function (en) { hide[en.target.id] = en.isIntersecting; });
+        sync();
+      }, { threshold: 0.12 });
+      [target, document.getElementById('pricing')].forEach(function (el) { io.observe(el); });
+    }
+  })();
+
+  /* ---------- Referral sign-up ---------- */
+  var referEmail = document.getElementById('refer-email');
+  var referErr = document.getElementById('refer-error');
+  var referGo = document.getElementById('refer-go');
+  var referBusy = false;
+  referEmail.addEventListener('input', function () { referErr.hidden = true; });
+  referEmail.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); referGo.click(); } });
+  function referError(msg) { referErr.textContent = msg; referErr.hidden = false; }
+  referGo.addEventListener('click', function () {
+    var email = referEmail.value.trim();
+    if (!EMAIL_RE.test(email)) { referError(email ? 'כתובת המייל לא נראית תקינה — בדקו אותה שוב.' : 'הזינו את כתובת המייל שלכם.'); referEmail.focus(); return; }
+    if (referBusy) return;
+    referBusy = true; referGo.textContent = 'רגע...';
+    postJSON(AFF_BASE + 'join', { email: email, website: document.getElementById('refer-hp').value })
+      .then(function (res) {
+        if (res.data.ok && res.data.link) {
+          document.getElementById('refer-link').value = res.data.link;
+          document.getElementById('refer-wa').href = 'https://wa.me/?text=' + encodeURIComponent('מצאתי משחקים משפחתיים מקסימים שמתאימים בדיוק למשפחה שלנו. שווה להציץ: ' + res.data.link);
+          document.getElementById('refer-form').hidden = true;
+          document.getElementById('refer-done').hidden = false;
+        } else if (res.status === 429) referError('נשלחו יותר מדי בקשות. נסו שוב בעוד שעה.');
+        else if (res.data.error === 'email') referError('כתובת המייל לא נראית תקינה — בדקו אותה שוב.');
+        else referError('משהו השתבש. נסו שוב בעוד רגע.');
+      })
+      .catch(function () { referError('אין חיבור כרגע. בדקו את האינטרנט ונסו שוב.'); })
+      .then(function () { referBusy = false; referGo.textContent = 'קבלו את הקישור שלי'; });
+  });
+  document.getElementById('refer-copy').addEventListener('click', function () {
+    var btn = this, input = document.getElementById('refer-link');
+    var done = function () { btn.textContent = 'הקישור הועתק!'; setTimeout(function () { btn.textContent = 'העתקת הקישור'; }, 2200); };
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(input.value).then(done, function () { input.select(); });
+    else { input.select(); try { document.execCommand('copy'); done(); } catch (e) {} }
   });
 
   function sendFree(email) {
