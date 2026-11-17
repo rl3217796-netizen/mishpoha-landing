@@ -1038,6 +1038,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     else { input.select(); try { document.execCommand('copy'); done(); } catch (e) {} }
   });
 
+  var freeSent = false;
   function sendFree(email) {
     if (!consentEl.checked) {
       emailErr.textContent = 'כדי לקבל את המשחק בחינם יש לאשר קבלת דיוור.';
@@ -1056,8 +1057,15 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       .then(function (r) { return r.json().catch(function () { return {}; }).then(function (d) { return { status: r.status, data: d }; }); })
       .then(function (res) {
         if (res.data.ok) {
-          doneEl.textContent = 'נשלח! המשחק בדרך למייל ' + email + '. לא מוצאים? בדקו גם בתיקיית הספאם/קידומי מכירות.';
+          doneEl.textContent = '';
+          var okTitle = document.createElement('strong');
+          okTitle.className = 'lp3-pricing-done__title';
+          okTitle.textContent = '✓ נשלח בהצלחה!';
+          doneEl.appendChild(okTitle);
+          doneEl.appendChild(document.createTextNode('המשחק בדרך למייל ' + email + '. לא מוצאים? בדקו גם בתיקיית הספאם/קידומי מכירות.'));
           doneEl.hidden = false;
+          freeSent = true;
+          doneEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
         } else if (res.status === 429) {
           showFreeError('נשלחו יותר מדי בקשות. נסו שוב בעוד שעה.');
         } else if (res.data.error === 'email') {
@@ -1069,7 +1077,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       .catch(function () { showFreeError('אין חיבור כרגע. בדקו את האינטרנט ונסו שוב.'); })
       .then(function () {
         sending = false;
-        payLabel.textContent = 'שלחו לי את המשחק בחינם';
+        payLabel.textContent = freeSent ? '✓ נשלח בהצלחה' : 'שלחו לי את המשחק בחינם';
       });
   }
 

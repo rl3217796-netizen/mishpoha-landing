@@ -321,3 +321,6 @@ body, .lp3 button, .lp3 input, .lp3 select { font-family: 'Heebo', 'Segoe UI', A
   .lp3-step-num { margin-bottom: 0; }
   .lp3-features { gap: 34px; }
 }
+
+/* free game: clear success message (2026-11-17) */
+.lp3-pricing-done__title { display: block; font-size: 20px; font-weight: 900; margin-bottom: 4px; }
