@@ -322,5 +322,11 @@ body, .lp3 button, .lp3 input, .lp3 select { font-family: 'Heebo', 'Segoe UI', A
   .lp3-features { gap: 34px; }
 }
 
+/* credit line at the very bottom of the page */
+.lp3-credit-line { margin: 40px auto 0; padding: 22px 16px 34px; max-width: 1100px; border-top: 2px dashed rgba(251, 242, 227, .18); text-align: center; font-size: 16px; color: var(--muted-soft); }
+.lp3-credit-line b { font-family: var(--hand); font-weight: 400; font-size: 24px; color: var(--orange); margin-right: 4px; display: inline-block; transform: rotate(-2deg); }
+
 /* free game: clear success message (2026-11-17) */
 .lp3-pricing-done__title { display: block; font-size: 20px; font-weight: 900; margin-bottom: 4px; }
+.lp3-credit-line a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 600px) { .lp3-credit-sep { display: none; } .lp3-credit-line a { display: block; margin-top: 4px; } }
