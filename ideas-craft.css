@@ -1,0 +1,31 @@
+/* ideas page in the "game night on the table" design (same language as craft.css) */
+.ih { padding-top: 56px; }
+.ih .ih-kicker { text-align: center; transform-origin: center; display: block; }
+.ih h1 { margin-bottom: 12px; }
+.ih p { color: var(--muted-soft); font-size: 17px; }
+.ideas { gap: 26px; padding-top: 30px; }
+.idea { background: var(--paper); color: var(--dk); border: 2px solid var(--dk); border-radius: 18px; overflow: visible; box-shadow: -7px 7px 0 var(--ic, var(--orange)); }
+.idea:nth-child(5n+2) { --ic: var(--purple); }
+.idea:nth-child(5n+3) { --ic: #2fa98a; }
+.idea:nth-child(5n+4) { --ic: #3f86d6; }
+.idea:nth-child(5n+5) { --ic: #c2457e; }
+.idea__head { padding: 20px 22px; color: var(--dk); }
+.idea__num { width: 48px; height: 48px; border-radius: 10px; background: var(--ic, var(--orange)); color: var(--dk); border: 2px solid var(--dk); box-shadow: -3px 3px 0 var(--dk); font-size: 21px; font-weight: 900; rotate: -4deg; }
+.idea:nth-child(even) .idea__num { rotate: 3deg; }
+.idea__title { font-size: 21px; font-weight: 900; color: var(--dk); }
+.idea__badge { color: var(--dk); background: var(--paper-2); border: 2px solid var(--dk); border-radius: 6px; font-weight: 700; rotate: -2deg; }
+.idea__chev { border: 2px solid var(--dk); color: var(--dk); width: 38px; height: 38px; }
+.idea.is-open .idea__chev { background: var(--dk); color: var(--paper); }
+.idea__needs { color: var(--ink-soft); font-size: 15.5px; }
+.idea__needs b { color: var(--dk); }
+.idea__inner { background: var(--paper-2); border: 2px dashed rgba(36,19,47,.3); border-radius: 12px; }
+.idea__sec + .idea__sec { border-top: 2px dashed rgba(36,19,47,.18); }
+.idea__sec h4 { color: var(--orange-deep); font-size: 16.5px; font-weight: 900; }
+.idea__sec p, .idea__sec ul { color: var(--dk); }
+.idea__sec ul li::marker { color: var(--orange-deep); }
+.ideas-cta p { color: var(--muted-soft); font-size: 17px; }
+/* credit line, as on the main page */
+.lp3-credit-line { margin: 40px auto 0; padding: 22px 16px 34px; max-width: 1100px; border-top: 2px dashed rgba(251, 242, 227, .18); text-align: center; font-size: 16px; color: var(--muted-soft); }
+.lp3-credit-line a { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+@media (max-width: 600px) { .lp3-credit-sep { display: none; } .lp3-credit-line a { display: block; margin-top: 4px; } }
+@media (max-width: 560px) { .idea__num { width: 40px; height: 40px; font-size: 18px; } .idea__title { font-size: 18.5px; } }
