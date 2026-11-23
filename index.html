@@ -723,6 +723,12 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
           <option data-price="20" value="הבטחת קיימת">הבטחת? קיימת!</option>
         </select>
       </div>
+      <div class="lp3-pricing-select-wrap" id="second-wrap" hidden>
+        <label for="game-select-second" class="lp3-pricing-label">רוצים להוסיף עוד משחק לאותו תשלום? (לא חובה)</label>
+        <select id="game-select-second" class="lp3-pricing-select">
+          <option value="" selected>בלי משחק נוסף</option>
+        </select>
+      </div>
       <p id="game-select-price" class="lp3-pricing-price" hidden></p>
       <div class="lp3-pricing-email-wrap">
         <label for="buyer-email" class="lp3-pricing-label">כתובת המייל שלכם (חובה — לשם נשלח המשחק)</label>
@@ -802,6 +808,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   var PAY_BASE = 'https://www.matara.pro/nedarimplus/online/';
   var select = document.getElementById('game-select-3');
   var priceEl = document.getElementById('game-select-price');
+  var second = document.getElementById('game-select-second');
+  var secondWrap = document.getElementById('second-wrap');
   var payBtn = document.getElementById('pay-button');
   var emailEl = document.getElementById('buyer-email');
   var emailErr = document.getElementById('buyer-email-error');
@@ -848,6 +856,33 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     return !!(opt && opt.hasAttribute('data-free'));
   }
 
+  /* Optional second game: same paid games as the main list, paid together in one
+     payment. The server reads Groupe "<game> + <game>" and sends both. */
+  Array.prototype.forEach.call(select.options, function (o) {
+    if (o.value !== '' && o.getAttribute('data-price') && !o.hasAttribute('data-free')) second.appendChild(o.cloneNode(true));
+  });
+  function syncSecond() {
+    var opt = selectedOption();
+    var paid = !!(opt && opt.value !== '' && !isFree());
+    secondWrap.hidden = !paid;
+    if (!paid) second.value = '';
+    Array.prototype.forEach.call(second.options, function (o) { o.disabled = o.value !== '' && o.value === select.value; });
+    if (second.value === select.value) second.value = '';
+  }
+
+  /* What is being bought right now: { game, price, count } or null (nothing paid chosen). */
+  function purchase() {
+    var opt = selectedOption();
+    if (!opt || opt.value === '' || isFree()) return null;
+    var extra = second.options[second.selectedIndex];
+    if (!extra || extra.value === '') return { game: opt.value, price: Number(opt.getAttribute('data-price')), count: 1 };
+    return {
+      game: opt.value + ' + ' + extra.value,
+      price: Number(opt.getAttribute('data-price')) + Number(extra.getAttribute('data-price')),
+      count: 2
+    };
+  }
+
   /* ---------- Credit code ---------- */
   var creditToggle = document.getElementById('credit-toggle');
   var creditRow = document.getElementById('credit-row');
@@ -867,12 +902,12 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   }
   function applyCredit() {
     var key = creditKey.value.trim().toUpperCase();
-    var opt = selectedOption();
+    var buy = purchase();
     credit = null;
     if (!key) { creditNote('', true); updatePrice(true); return; }
-    if (!opt || opt.value === '' || isFree()) { creditNote('בחרו קודם משחק בתשלום.', false); return; }
+    if (!buy) { creditNote('בחרו קודם משחק בתשלום.', false); return; }
     creditNote('בודקים...', true);
-    postJSON(AFF_BASE + 'quote', { key: key, game: opt.value })
+    postJSON(AFF_BASE + 'quote', { key: key, game: buy.game })
       .then(function (res) {
         if (res.data.ok && res.data.use > 0) {
           credit = { key: key, use: res.data.use, toPay: res.data.toPay };
@@ -893,8 +928,9 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
 
   function updatePrice(keepCredit) {
     if (keepCredit !== true && credit) { credit = null; if (creditKey.value.trim()) setTimeout(applyCredit, 0); }
-    var opt = selectedOption();
-    var price = opt && opt.value !== '' ? opt.getAttribute('data-price') : null;
+    syncSecond();
+    var buy = purchase();
+    var price = buy ? buy.price : null;
     var free = isFree();
     consentWrap.hidden = !free;
     doneEl.hidden = true;
@@ -914,7 +950,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       priceEl.hidden = false;
       if (credit.toPay === 0) payLabel.textContent = 'שלחו לי את המשחק';
     } else if (price) {
-      showHolidayPrice(priceEl, price, 'מחיר חנוכה: ');
+      showHolidayPrice(priceEl, price, buy.count === 2 ? 'מחיר חנוכה לשניהם: ' : 'מחיר חנוכה: ', buy.count);
       priceEl.hidden = false;
     } else {
       priceEl.hidden = true;
@@ -925,10 +961,10 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   /* Hanukkah sale: show a crossed-out "regular" price 10 NIS above the real one.
      Display only — the amount charged is still data-price. */
   var HOLIDAY_MARKUP = 10;
-  function showHolidayPrice(el, price, label) {
+  function showHolidayPrice(el, price, label, count) {
     el.innerHTML = '';
     var was = document.createElement('s');
-    was.textContent = (Number(price) + HOLIDAY_MARKUP) + ' ₪';
+    was.textContent = (Number(price) + HOLIDAY_MARKUP * (count || 1)) + ' ₪';
     var now = document.createElement('b');
     now.textContent = label + price + ' ₪';
     el.appendChild(was);
@@ -947,6 +983,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   });
 
   select.addEventListener('change', function () { updatePrice(); });
+  second.addEventListener('change', function () { updatePrice(); });
   updatePrice();
 
   document.querySelectorAll('.lp3-game__info-btn').forEach(function (btn) {
@@ -978,9 +1015,10 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   payBtn.addEventListener('click', function (e) {
     e.preventDefault();
     var opt = selectedOption();
-    var price = opt && opt.value !== '' ? opt.getAttribute('data-price') : null;
-    var game = opt && opt.value !== '' ? opt.value : null;
-    if (!game || (!price && !isFree())) {
+    var buy = purchase();
+    var price = buy ? buy.price : null;
+    var game = buy ? buy.game : (isFree() ? opt.value : null);
+    if (!game) {
       select.focus();
       select.style.outline = '2px solid #ff6a21';
       return;
