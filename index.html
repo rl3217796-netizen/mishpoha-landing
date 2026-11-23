@@ -198,6 +198,9 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
 .lp3-game__body p { font-size: 14px; color: var(--muted-soft); line-height: 1.7; margin: 0 0 16px; }
 .lp3-game__pick { font-size: 13.5px; font-weight: 700; color: var(--gc); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; background: none; border: none; padding: 0; cursor: pointer; font-family: var(--body); }
 .lp3-game__pick:hover { text-decoration: underline; }
+.lp3-game__price { font-size: 14px; margin: -6px 0 14px !important; color: var(--muted-soft); }
+.lp3-game__price s, .lp3-pricing-price s { opacity: 0.6; font-weight: 600; margin-inline-end: 8px; }
+.lp3-game__price b { color: var(--gc); font-weight: 800; }
 .lp3-game__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
 .lp3-game__info-btn { display: inline-flex; align-items: center; gap: 7px; font-family: var(--body); font-size: 13px; font-weight: 700; color: var(--muted-soft); background: color-mix(in srgb, var(--gc) 12%, transparent); border: 1px solid color-mix(in srgb, var(--gc) 45%, var(--line)); border-radius: 999px; padding: 7px 14px; cursor: pointer; transition: background .2s ease, color .2s ease; }
 .lp3-game__info-btn:hover, .lp3-game__info-btn[aria-expanded="true"] { background: color-mix(in srgb, var(--gc) 24%, transparent); color: var(--text, #fff); }
@@ -911,13 +914,37 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       priceEl.hidden = false;
       if (credit.toPay === 0) payLabel.textContent = 'שלחו לי את המשחק';
     } else if (price) {
-      priceEl.textContent = 'מחיר: ' + price + ' ₪';
+      showHolidayPrice(priceEl, price, 'מחיר חנוכה: ');
       priceEl.hidden = false;
     } else {
       priceEl.hidden = true;
     }
     select.style.outline = '';
   }
+
+  /* Hanukkah sale: show a crossed-out "regular" price 10 NIS above the real one.
+     Display only — the amount charged is still data-price. */
+  var HOLIDAY_MARKUP = 10;
+  function showHolidayPrice(el, price, label) {
+    el.innerHTML = '';
+    var was = document.createElement('s');
+    was.textContent = (Number(price) + HOLIDAY_MARKUP) + ' ₪';
+    var now = document.createElement('b');
+    now.textContent = label + price + ' ₪';
+    el.appendChild(was);
+    el.appendChild(now);
+  }
+  document.querySelectorAll('.lp3-game__pick[data-game]').forEach(function (btn) {
+    var opt = Array.prototype.find.call(select.options, function (o) { return o.value === btn.getAttribute('data-game'); });
+    var price = opt && opt.getAttribute('data-price');
+    if (!price || opt.hasAttribute('data-free')) return;
+    var line = document.createElement('p');
+    line.className = 'lp3-game__price';
+    line.style.setProperty('--gc', btn.style.getPropertyValue('--gc'));
+    showHolidayPrice(line, price, 'מחיר חנוכה: ');
+    var actions = btn.closest('.lp3-game__actions');
+    actions.parentNode.insertBefore(line, actions);
+  });
 
   select.addEventListener('change', function () { updatePrice(); });
   updatePrice();
