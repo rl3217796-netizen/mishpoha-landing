@@ -183,6 +183,8 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; }
 .dgpdemo-card h2{margin:0 0 8px;font-size:30px;font-weight:900;line-height:1.15}
 .dgpdemo-card p{margin:0 0 22px;font-size:17px;line-height:1.6}
 .dgpdemo-card a{display:inline-block;background:#ff6a21;color:#fff;text-decoration:none;font-weight:800;font-size:18px;padding:13px 28px;border-radius:12px;border:2px solid #24132f}
+.dgpdemo-close{display:block;margin:14px auto 0;background:transparent;color:#24132f;font:700 16px 'Heebo','Segoe UI',Arial,sans-serif;border:2px solid #24132f;border-radius:10px;padding:8px 20px;cursor:pointer}
+.dgpdemo-close[hidden]{display:none}
 .dgpdemo-preparing{position:fixed;inset:0;z-index:2147483645;display:grid;place-items:center;background:#150c20;color:#fbf2e3;font:800 26px 'Heebo','Segoe UI',Arial,sans-serif;direction:rtl}
 @media print{body>*{display:none!important}body::after{content:'זוהי גרסת הדגמה. את המשחק המלא להדפסה מקבלים במייל.';display:block;padding:40px;font:700 22px Arial,sans-serif;direction:rtl}}
 </style>
@@ -193,20 +195,34 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; }
     <h2 id="dgpdemo-title">נהניתם? 😊</h2>
     <p id="dgpdemo-text">זו הייתה טעימה מהמשחק. את המשחק המלא, עם התוכן של המשפחה שלכם, מקבלים למייל מיד אחרי הרכישה.</p>
     <a href="../../index.html#pick-hanukkia" target="_top">לרכישת המשחק ←</a>
+    <button type="button" class="dgpdemo-close" id="dgpdemo-close" hidden>חזרה למשחק</button>
   </div>
 </div>
 <script>
 (function () {
   var LIMIT_MS = 240000;
   var cover = document.getElementById('dgpdemo-cover');
-  function stop(text) {
-    if (text) document.getElementById('dgpdemo-text').textContent = text;
+  var title = document.getElementById('dgpdemo-title');
+  var text = document.getElementById('dgpdemo-text');
+  var close = document.getElementById('dgpdemo-close');
+  var timeUp = false;
+  // Time is up: the demo ends, there is no way back.
+  setTimeout(function () {
+    timeUp = true;
+    title.textContent = 'נהניתם? 😊';
+    text.textContent = 'זו הייתה טעימה מהמשחק. את המשחק המלא, עם התוכן של המשפחה שלכם, מקבלים למייל מיד אחרי הרכישה.';
+    close.hidden = true;
     cover.classList.add('is-on');
-  }
-  setTimeout(function () { stop(); }, LIMIT_MS);
+  }, LIMIT_MS);
+  // Print: a note the visitor can close to keep playing.
   window.print = function () {
-    stop('בגרסת ההדגמה אי אפשר להדפיס. את המשחק המלא להדפסה מקבלים למייל.');
+    if (timeUp) return;
+    title.textContent = 'אין הדפסה בדמו';
+    text.textContent = 'בגרסת ההדגמה אי אפשר להדפיס. את המשחק המלא להדפסה מקבלים למייל.';
+    close.hidden = false;
+    cover.classList.add('is-on');
   };
+  close.addEventListener('click', function () { cover.classList.remove('is-on'); });
 })();
 
 // Helpers for the per-game seed script (seeds/<game>.js) that fills sample content and skips setup.
