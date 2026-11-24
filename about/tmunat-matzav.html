@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>תמונת מצב – על המשחק | המשפוחה</title>
+<meta name="description" content="מתבוננים בתמונה משפחתית, היא נעלמת, ואז בודקים מי זוכר יותר פרטים. משחקים אישית, או מתחלקים לעד שש קבוצות שמתחרות זו בזו.">
+<link rel="icon" type="image/png" href="images/favicon-32.png">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Heebo:wght@400;500;700;800;900&family=Gveret+Levin&display=swap" rel="stylesheet">
+<style>
+/* VOICE: warm family game night, same as the landing page.
+   IDEA: the game's box laid open on the dark tablecloth — rule sheet + screenshots as paper cards.
+   PICTURE: a playable demo of the game in a big paper "TV" frame right under the title.
+   COLOUR and TYPE: tablecloth #150c20, paper #fbf2e3, orange #ff6a21, purple #8654ad; Heebo + Gveret Levin.
+   LAYOUT: title + facts, demo, 4 numbered steps alternating with screenshots, orange CTA band, credit. */
+/* see page.css */
+:root{--gc:#ff6a21;--table:#150c20;--paper:#fbf2e3;--dk:#24132f;--orange:#ff6a21;--purple:#8654ad;--purple-soft:#c3b1d6;--muted:#d6cbe2;--rule:rgba(251,242,227,.22);
+  --hand:'Gveret Levin','Heebo',cursive;color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+html{scroll-behavior:smooth;scroll-padding-top:20px}
+body{margin:0;background:var(--table) radial-gradient(rgba(251,242,227,.055) 1.2px,transparent 1.7px) 0 0/24px 24px;color:var(--paper);font:17px/1.7 'Heebo','Segoe UI',Arial,sans-serif;overflow-x:clip}
+a{color:inherit}
+.wrap{max-width:1100px;margin:0 auto;padding:0 max(5vw,16px)}
+
+/* nav */
+.nav{border-bottom:2px dashed var(--rule)}
+.nav .wrap{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px}
+.nav img{height:44px;display:block}
+.back{font-weight:700;font-size:15px;text-decoration:none;border:2px solid var(--paper);border-radius:10px;padding:8px 16px;min-height:44px;display:inline-flex;align-items:center}
+.back:hover{background:var(--paper);color:var(--dk)}
+
+/* head */
+.head{padding:clamp(34px,5vw,60px) 0 26px;text-align:center}
+.tag{display:inline-block;background:var(--paper);color:var(--dk);border:2px solid var(--dk);border-radius:8px;padding:2px 14px;font-weight:800;font-size:14px;rotate:-4deg;box-shadow:-3px 3px 0 var(--gc)}
+.eyebrow{display:block;font-family:var(--hand);color:var(--orange);font-size:24px;margin:18px 0 0;rotate:-2deg}
+h1{font-size:clamp(40px,6vw,64px);font-weight:900;line-height:1.05;margin:6px 0 14px;letter-spacing:-.02em}
+.lead{max-width:60ch;margin:0 auto 24px;color:var(--muted);font-size:18px;text-wrap:pretty}
+.facts{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:0;padding:0;list-style:none}
+.facts li{background:rgba(251,242,227,.07);border:2px solid var(--rule);border-radius:12px;padding:8px 16px;font-size:15px}
+.facts b{color:var(--orange);margin-inline-start:6px}
+
+/* demo */
+.tv{max-width:960px;margin:28px auto 0;background:var(--paper);border:2px solid var(--dk);border-radius:20px;padding:14px 14px 10px;box-shadow:-10px 10px 0 var(--purple);rotate:-.6deg}
+.play{position:relative;aspect-ratio:16/10;border-radius:10px;overflow:hidden;background:#000;border:2px solid var(--dk)}
+.play img,.play iframe{display:block;width:100%;height:100%;border:0;object-fit:cover}
+.play__go{position:absolute;inset:0;margin:auto;width:max-content;height:max-content;display:flex;align-items:center;gap:12px;padding:14px 26px 14px 30px;border-radius:999px;border:2px solid var(--dk);background:var(--gc);color:#fff;font:800 22px 'Heebo',sans-serif;cursor:pointer;box-shadow:-6px 6px 0 var(--dk);transition:transform .12s,box-shadow .12s}
+.play__go:hover{transform:translate(-2px,2px);box-shadow:-4px 4px 0 var(--dk)}
+.play__go:focus-visible{outline:3px solid var(--paper);outline-offset:3px}
+.play__go span{font-size:18px}
+.play__full{margin-inline-start:10px;font:700 14px 'Heebo',sans-serif;color:var(--dk);background:transparent;border:2px solid var(--dk);border-radius:8px;padding:2px 10px;cursor:pointer;vertical-align:middle}
+.tv figcaption{margin:8px 4px 0;color:var(--dk);font-family:var(--hand);font-size:22px;text-align:center}
+
+/* steps */
+.sec{padding:clamp(50px,7vw,90px) 0 10px}
+.h2{text-align:center;font-size:clamp(30px,4vw,42px);font-weight:900;margin:0 0 6px;line-height:1.1}
+.h2 em{font-style:normal;color:var(--orange)}
+.sub{text-align:center;color:var(--muted);margin:0 0 40px}
+.step{display:grid;grid-template-columns:minmax(0,.85fr) minmax(0,1.15fr);gap:clamp(24px,5vw,60px);align-items:center;margin-bottom:clamp(40px,6vw,70px)}
+.step:nth-child(even) .shot{order:-1}
+.num{display:grid;place-items:center;width:58px;height:58px;border-radius:50%;background:var(--gc);color:#fff;text-shadow:0 1px 0 rgba(0,0,0,.3);border:2px solid var(--dk);box-shadow:-4px 4px 0 var(--purple);font-weight:900;font-size:28px;margin-bottom:14px}
+.step h3{font-size:26px;font-weight:900;margin:0 0 8px;line-height:1.2}
+.step p{margin:0;color:var(--muted)}
+.shot{background:var(--paper);border:2px solid var(--dk);border-radius:12px;overflow:hidden;box-shadow:-8px 8px 0 rgba(0,0,0,.45);rotate:1.2deg;transition:rotate .3s ease}
+.step:nth-child(even) .shot{rotate:-1.2deg}
+.shot:hover{rotate:0deg}
+.bar{display:flex;gap:5px;padding:8px 12px;background:#efe9f2;border-bottom:2px solid var(--dk)}
+.bar span{width:8px;height:8px;border-radius:50%;background:#d7c9e3}
+.shot img{display:block;width:100%;height:auto}
+
+/* cta */
+.cta{margin-top:30px;background:var(--orange);color:var(--dk);border-block:3px solid var(--dk);text-align:center;padding:clamp(40px,6vw,64px) 16px}
+.cta h2{font-size:clamp(30px,4.4vw,46px);font-weight:900;margin:0 0 6px;line-height:1.1}
+.cta p{margin:0 0 24px;font-size:18px;font-weight:500}
+.btn{display:inline-flex;align-items:center;min-height:52px;padding:0 30px;border-radius:12px;background:var(--dk);color:var(--paper);font-weight:800;font-size:18px;text-decoration:none;border:2px solid var(--dk);box-shadow:-5px 5px 0 var(--purple);transition:transform .12s,box-shadow .12s}
+.btn:hover{transform:translate(-2px,2px);box-shadow:-3px 3px 0 var(--purple)}
+.btn:focus-visible,.back:focus-visible{outline:3px solid var(--paper);outline-offset:3px}
+
+.credit{margin:0 auto;padding:22px 16px 34px;text-align:center;font-size:16px;color:var(--muted)}
+.credit b{font-family:var(--hand);font-weight:400;font-size:24px;color:var(--orange);display:inline-block;rotate:-2deg;margin-right:4px}
+.demo{text-align:center;font-size:13px;color:var(--purple-soft);margin:10px 0 0}
+
+@media(max-width:760px){
+  .step{grid-template-columns:minmax(0,1fr);gap:18px}
+  .step:nth-child(even) .shot{order:0}
+  .shot,.step:nth-child(even) .shot,.rulecard{rotate:0deg}
+  .tv{rotate:0deg;padding:8px 8px 6px;box-shadow:-6px 6px 0 var(--purple)}
+  .nav img{height:36px}
+}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.shot,.btn{transition:none}}
+
+.rulecard{background:var(--paper);border:2px solid var(--dk);border-radius:16px;box-shadow:-8px 8px 0 var(--gc);rotate:2deg;aspect-ratio:16/10;display:grid;place-items:center;padding:20px}
+.rulecard b{font-family:var(--hand);font-weight:400;color:var(--dk);font-size:clamp(34px,5vw,58px);text-align:center;line-height:1.1}
+.eyebrow{color:var(--gc)}
+.h2 em{color:var(--gc)}
+.facts b{color:var(--gc)}
+@media(max-width:760px){.rulecard{rotate:0deg;box-shadow:-5px 5px 0 var(--gc)}}
+</style>
+</head>
+<body style="--gc:#3F86D6">
+<nav class="nav"><div class="wrap">
+  <a href="../index.html"><img src="images/logo.png" alt="המשפוחה"></a>
+  <a class="back" href="../index.html#games">→ לכל המשחקים</a>
+</div></nav>
+<main>
+  <header class="head wrap">
+    <span class="tag">תמונת מצב</span>
+    <span class="eyebrow">מי זוכר יותר?</span>
+    <h1>תמונת מצב</h1>
+    <p class="lead">מתבוננים בתמונה משפחתית, היא נעלמת, ואז בודקים מי זוכר יותר פרטים. משחקים אישית, או מתחלקים לעד שש קבוצות שמתחרות זו בזו.</p>
+    <ul class="facts"><li>גיל<b><bdi dir="ltr">6+</bdi></b></li><li>משתתפים<b><bdi dir="ltr">2+</bdi></b></li><li>מתאים ל<b>מי שאוהב אתגר של זיכרון</b></li></ul>
+    <figure class="tv" id="demo">
+      <div class="play" data-src="demo/tmunat-matzav.html">
+        <img src="images/tmunat-matzav-poster.jpg" alt="מסך הפתיחה של תמונת מצב">
+        <button type="button" class="play__go"><span>▶</span>נסו את המשחק</button>
+      </div>
+      <figcaption>נסו בעצמכם: כמה דקות של משחק אמיתי <button type="button" class="play__full" hidden>מסך מלא ⛶</button></figcaption>
+    </figure>
+    <p class="demo">גרסת הדגמה לכמה דקות. המשחק המלא מגיע למייל מיד אחרי הרכישה.</p>
+  </header>
+  <section class="sec wrap">
+    <h2 class="h2">איך <em>משחקים?</em></h2>
+    <p class="sub">ארבעה צעדים, ואתם בתוך המשחק</p>
+    <div class="steps"><div class="step"><div><span class="num">1</span><h3>מעלים תמונה וכותבים שאלות</h3><p>מעלים תמונה משפחתית וכותבים עליה שאלות, עם תשובות לבחירה או עם תשובה פתוחה.</p></div><div class="shot"><div class="bar"><span></span><span></span><span></span></div><img src="images/tmunat-matzav-1.jpg" alt="מעלים תמונה וכותבים שאלות" loading="lazy"></div></div><div class="step"><div><span class="num">2</span><h3>מתבוננים היטב</h3><p>כולם מתבוננים בתמונה לזמן קצוב, ואז היא נעלמת.</p></div><div class="shot"><div class="bar"><span></span><span></span><span></span></div><img src="images/tmunat-matzav-2.jpg" alt="מתבוננים היטב" loading="lazy"></div></div><div class="step"><div><span class="num">3</span><h3>מתחיל החידון</h3><p>עונים על השאלות מהזיכרון. מי שעונה מהר יותר צובר יותר נקודות.</p></div><div class="shot"><div class="bar"><span></span><span></span><span></span></div><img src="images/tmunat-matzav-3.jpg" alt="מתחיל החידון" loading="lazy"></div></div><div class="step"><div><span class="num">4</span><h3>התמונה חוזרת</h3><p>אחרי כל תשובה התמונה חוזרת, והפרט הנכון מסומן עליה.</p></div><div class="shot"><div class="bar"><span></span><span></span><span></span></div><img src="images/tmunat-matzav-4.jpg" alt="התמונה חוזרת" loading="lazy"></div></div></div>
+  </section>
+  <section class="cta">
+    <h2>מוכנים לערב משחק?</h2>
+    <p>מתאימים את המשחק לתוכן של המשפחה שלכם, ומשחקים.</p>
+    <a class="btn" href="../index.html#pick-tmunat-matzav">בחרו במשחק ←</a>
+  </section>
+</main>
+<footer class="credit"><span>רעיון ופיתוח:</span> <b>רבקי וייס</b></footer>
+<script>
+(function () {
+  var box = document.querySelector('.play');
+  var full = document.querySelector('.play__full');
+  box.querySelector('.play__go').addEventListener('click', function () {
+    var frame = document.createElement('iframe');
+    frame.src = box.getAttribute('data-src');
+    frame.title = 'הדגמה של המשחק';
+    frame.allow = 'fullscreen; autoplay';
+    box.replaceChildren(frame);
+    frame.focus();
+    full.hidden = !frame.requestFullscreen;
+    full.addEventListener('click', function () { frame.requestFullscreen(); });
+  });
+})();
+</script>
+</body>
+</html>

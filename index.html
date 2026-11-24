@@ -202,19 +202,9 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
 .lp3-game__price s, .lp3-pricing-price s { opacity: 0.6; font-weight: 600; margin-inline-end: 8px; }
 .lp3-game__price b { color: var(--gc); font-weight: 800; }
 .lp3-game__actions { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px 16px; }
-.lp3-game__info-btn { display: inline-flex; align-items: center; gap: 7px; font-family: var(--body); font-size: 13px; font-weight: 700; color: var(--muted-soft); background: color-mix(in srgb, var(--gc) 12%, transparent); border: 1px solid color-mix(in srgb, var(--gc) 45%, var(--line)); border-radius: 999px; padding: 7px 14px; cursor: pointer; transition: background .2s ease, color .2s ease; }
-.lp3-game__info-btn:hover, .lp3-game__info-btn[aria-expanded="true"] { background: color-mix(in srgb, var(--gc) 24%, transparent); color: var(--text, #fff); }
-.lp3-game__info-btn svg { transition: transform .3s ease; }
-.lp3-game__info-btn[aria-expanded="true"] svg { transform: rotate(180deg); }
+.lp3-game__info-btn { display: inline-flex; align-items: center; gap: 7px; font-family: var(--body); font-size: 13px; font-weight: 700; color: var(--muted-soft); background: color-mix(in srgb, var(--gc) 12%, transparent); border: 1px solid color-mix(in srgb, var(--gc) 45%, var(--line)); border-radius: 999px; padding: 7px 14px; cursor: pointer; text-decoration: none; transition: background .2s ease, color .2s ease; }
+.lp3-game__info-btn:hover { background: color-mix(in srgb, var(--gc) 24%, transparent); color: var(--text, #fff); }
 .lp3-game__info-btn:focus-visible { outline: 2px solid var(--gc); outline-offset: 2px; }
-.lp3-game__info { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .35s ease; }
-.lp3-game__info.is-open { grid-template-rows: 1fr; }
-.lp3-game__info > div { overflow: hidden; }
-.lp3-game__info dl { margin: 0 0 16px; padding: 14px 16px; border-radius: 12px; background: color-mix(in srgb, var(--gc) 9%, rgba(0,0,0,0.18)); border: 1px solid color-mix(in srgb, var(--gc) 28%, var(--line)); font-size: 13.5px; line-height: 1.7; }
-.lp3-game__info dt { font-weight: 800; color: var(--gc); font-size: 12.5px; }
-.lp3-game__info dd { margin: 0 0 8px; color: var(--muted-soft); }
-.lp3-game__info dd:last-child { margin-bottom: 0; }
-@media (prefers-reduced-motion: reduce) { .lp3-game__info, .lp3-game__info-btn svg { transition: none; } }
 @media (max-width: 760px) { .lp3-games { grid-template-columns: 1fr; } }
 
 /* ---------- imagine / quote ---------- */
@@ -528,16 +518,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <div class="lp3-game__body">
           <h3>אישיות</h3>
           <p>משחק שבו צריך לזהות את הדמות לפי תשובות לשאלות. אפשר להוסיף תמונות של הדמויות.</p>
-          <div class="lp3-game__info" id="info-personality" style="--gc:#FF6A21"><div>
-            <dl>
-              <dt>למי זה מתאים?</dt><dd>משפחות, מפגשים משפחתיים וכל מי שמכיר את המשפחה.</dd>
-              <dt>גיל</dt><dd><bdi dir="ltr">8+</bdi></dd>
-              <dt>כמה משתתפים?</dt><dd><bdi dir="ltr">2+</bdi></dd>
-              <dt>על המשחק</dt><dd>על המסך נפתחים חלונות ממוספרים, ובהם דמויות שהמשפחה מכירה. בכל סבב מוצגת שאלה, ליד כל חלון מופיעה תשובת כן/לא, ומי שמזהה ראשון מי מסתתר שם צובר/ת נקודות. אפשר להעלות גם תמונות.</dd>
-            </dl>
-          </div></div>
           <div class="lp3-game__actions">
-            <button type="button" class="lp3-game__info-btn" style="--gc:#FF6A21" aria-expanded="false" aria-controls="info-personality">על המשחק <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <a class="lp3-game__info-btn" style="--gc:#FF6A21" href="about/personality.html">על המשחק ←</a>
             <button type="button" class="lp3-game__pick" style="--gc:#FF6A21" data-game="אישיות">בחרו במשחק ←</button>
           </div>
         </div>
@@ -553,16 +535,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <div class="lp3-game__body">
           <h3>משחק זיכרון</h3>
           <p>משחק זיכרון עם תמונות, מילים או שילוב של שניהם.</p>
-          <div class="lp3-game__info" id="info-memory" style="--gc:#8654AD"><div>
-            <dl>
-              <dt>למי זה מתאים?</dt><dd>כל המשפחה — לילדים צעירים אפשר להתחיל בלוח קטן, ולמבוגרים להגדיל את האתגר.</dd>
-              <dt>גיל</dt><dd><bdi dir="ltr">7+</bdi></dd>
-              <dt>כמה משתתפים?</dt><dd>שני שחקנים ומעלה.</dd>
-              <dt>על המשחק</dt><dd>הופכים בכל תור שני קלפים ומחפשים זוגות תואמים של תמונות, מילים או שילוב של שניהם מהתוכן המשפחתי שלכם. מי שמוצא/ת זוג ממשיך/ה לתור נוסף, ומי שאסף/ה הכי הרבה זוגות — מנצח/ת.</dd>
-            </dl>
-          </div></div>
           <div class="lp3-game__actions">
-            <button type="button" class="lp3-game__info-btn" style="--gc:#8654AD" aria-expanded="false" aria-controls="info-memory">על המשחק <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <a class="lp3-game__info-btn" style="--gc:#8654AD" href="about/memory.html">על המשחק ←</a>
             <button type="button" class="lp3-game__pick" style="--gc:#8654AD" data-game="משחק זיכרון">בחרו במשחק ←</button>
           </div>
         </div>
@@ -579,16 +553,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <div class="lp3-game__body">
           <h3>במילים אחרות</h3>
           <p>משחק להדפסה שבו מסבירים מילה בלי לומר את המילה עצמה. <strong style="color:#E2530F">מתנה מאיתנו — בחינם!</strong></p>
-          <div class="lp3-game__info" id="info-alias" style="--gc:#E2530F"><div>
-            <dl>
-              <dt>למי זה מתאים?</dt><dd>משפחות, מפגשים משפחתיים וכל מי שמכיר את המשפחה.</dd>
-              <dt>גיל</dt><dd><bdi dir="ltr">6+</bdi></dd>
-              <dt>כמה משתתפים?</dt><dd>ארבעה משתתפים ומעלה, שמתחלקים לשתי קבוצות או יותר.</dd>
-              <dt>על המשחק</dt><dd>מדפיסים את הכרטיסים, ובכל תור אחד מחברי הקבוצה מסביר מילה — בלי לומר את המילה עצמה — והשאר מנסים לנחש לפני שנגמר הזמן. על כל מילה שנוחשה הקבוצה מקבלת נקודה, והקבוצה שמגיעה ראשונה ליעד מנצחת.</dd>
-            </dl>
-          </div></div>
           <div class="lp3-game__actions">
-            <button type="button" class="lp3-game__info-btn" style="--gc:#E2530F" aria-expanded="false" aria-controls="info-alias">על המשחק <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <a class="lp3-game__info-btn" style="--gc:#E2530F" href="about/alias.html">על המשחק ←</a>
             <button type="button" class="lp3-game__pick" style="--gc:#E2530F" data-game="במילים אחרות">קבלו בחינם ←</button>
           </div>
         </div>
@@ -604,16 +570,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <div class="lp3-game__body">
           <h3>אנדרלמוסיה</h3>
           <p>חפיסת קלפים משפחתית להדפסה — כולם משחקים בו-זמנית, בלי תורות ובמהירות.</p>
-          <div class="lp3-game__info" id="info-andralamusia" style="--gc:#2FA98A"><div>
-            <dl>
-              <dt>למי זה מתאים?</dt><dd>ילדים ומבוגרים שאוהבים משחק מהיר וקליל.</dd>
-              <dt>גיל</dt><dd><bdi dir="ltr">8+</bdi></dd>
-              <dt>כמה משתתפים?</dt><dd>שניים ומעלה — כל משתתף/ת מקבל/ת סט קלפים מודפס על בריסטול בצבע משלו/ה.</dd>
-              <dt>על המשחק</dt><dd>חפיסת קלפים משפחתית להדפסה, שבה בונים ערימות של בני המשפחה לפי הסדר — מההורים ועד האחרון/ה. אין תורות: כולם משחקים בו-זמנית, ומי שמהיר/ה יותר מניח/ה ראשון/ה.</dd>
-            </dl>
-          </div></div>
           <div class="lp3-game__actions">
-            <button type="button" class="lp3-game__info-btn" style="--gc:#2FA98A" aria-expanded="false" aria-controls="info-andralamusia">על המשחק <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <a class="lp3-game__info-btn" style="--gc:#2FA98A" href="about/andralamusia.html">על המשחק ←</a>
             <button type="button" class="lp3-game__pick" style="--gc:#2FA98A" data-game="אנדרלמוסיה">בחרו במשחק ←</button>
           </div>
         </div>
@@ -629,16 +587,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <div class="lp3-game__body">
           <h3>תמונת מצב – מי זוכר יותר?</h3>
           <p>מתבוננים בתמונה משפחתית, היא נעלמת, ואז בודקים מי זוכר יותר פרטים.</p>
-          <div class="lp3-game__info" id="info-tmunat-matzav" style="--gc:#3F86D6"><div>
-            <dl>
-              <dt>למי זה מתאים?</dt><dd>משפחות, מפגשים משפחתיים וכל מי שאוהב/ת אתגר של זיכרון והתבוננות.</dd>
-              <dt>גיל</dt><dd><bdi dir="ltr">6+</bdi></dd>
-              <dt>כמה משתתפים?</dt><dd>שניים ומעלה. משחקים אישית, או מתחלקים לעד שש קבוצות שמתחרות זו בזו.</dd>
-              <dt>על המשחק</dt><dd>מעלים תמונה משפחתית וכותבים עליה שאלות, עם תשובות לבחירה או עם תשובה פתוחה. כולם מתבוננים בתמונה לזמן קצוב, ואז היא נעלמת ומתחיל החידון. אחרי כל תשובה התמונה חוזרת, והפרט הנכון מסומן עליה. מי שעונה מהר יותר צובר/ת יותר נקודות.</dd>
-            </dl>
-          </div></div>
           <div class="lp3-game__actions">
-            <button type="button" class="lp3-game__info-btn" style="--gc:#3F86D6" aria-expanded="false" aria-controls="info-tmunat-matzav">על המשחק <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <a class="lp3-game__info-btn" style="--gc:#3F86D6" href="about/tmunat-matzav.html">על המשחק ←</a>
             <button type="button" class="lp3-game__pick" style="--gc:#3F86D6" data-game="תמונת מצב">בחרו במשחק ←</button>
           </div>
         </div>
@@ -654,16 +604,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <div class="lp3-game__body">
           <h3>הבטחת? קיימת!</h3>
           <p>כל אחד נותן הבטחה, הגורל בוחר למי – ועכשיו נשאר לקיים! משחק הבטחות קצר וקליל.</p>
-          <div class="lp3-game__info" id="info-promises" style="--gc:#C2457E"><div>
-            <dl>
-              <dt>למי זה מתאים?</dt><dd>משפחות ומפגשים משפחתיים.</dd>
-              <dt>גיל</dt><dd><bdi dir="ltr">6+</bdi></dd>
-              <dt>כמה משתתפים?</dt><dd>שניים ומעלה.</dd>
-              <dt>על המשחק</dt><dd>כל משתתף/ת כותב/ת בסוד הבטחה אחת. אחר כך הגורל מגריל במעגל השמות למי ההבטחה מגיעה, והכרטיס נחשף לעיני כולם. וכשנגמר המשחק, נשאר רק לקיים.</dd>
-            </dl>
-          </div></div>
           <div class="lp3-game__actions">
-            <button type="button" class="lp3-game__info-btn" style="--gc:#C2457E" aria-expanded="false" aria-controls="info-promises">על המשחק <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <a class="lp3-game__info-btn" style="--gc:#C2457E" href="about/promises.html">על המשחק ←</a>
             <button type="button" class="lp3-game__pick" style="--gc:#C2457E" data-game="הבטחת קיימת">בחרו במשחק ←</button>
           </div>
         </div>
@@ -679,16 +621,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <div class="lp3-game__body">
           <h3>מרוץ המבצרים</h3>
           <p>משחק קבוצות מול מסך אחד: כל תשובה נכונה מוסיפה קומה למבצר, וקלפי הפתעה יכולים להפיל הכול.</p>
-          <div class="lp3-game__info" id="info-migdalim" style="--gc:#D9822B"><div>
-            <dl>
-              <dt>למי זה מתאים?</dt><dd>מפגשים משפחתיים וקבוצות גדולות – מספיק מחשב או מסך אחד שכולם רואים.</dd>
-              <dt>גיל</dt><dd><bdi dir="ltr">7+</bdi></dd>
-              <dt>כמה משתתפים?</dt><dd>שתיים עד ארבע קבוצות, בכל גודל.</dd>
-              <dt>על המשחק</dt><dd>כל קבוצה בונה מבצר משלה. בכל תור הקבוצה בוחרת בנייה בטוחה או נועזת ועונה על שאלה עם ארבע תשובות, ותשובה נכונה מוסיפה קומות. קלפי הפתעה מביאים גניבה, הקפאה, מגן ורעידת אדמה, והמבצר הראשון שמגיע לפסגה מנצח. אפשר לכתוב שאלות משלכם על המשפחה.</dd>
-            </dl>
-          </div></div>
           <div class="lp3-game__actions">
-            <button type="button" class="lp3-game__info-btn" style="--gc:#D9822B" aria-expanded="false" aria-controls="info-migdalim">על המשחק <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <a class="lp3-game__info-btn" style="--gc:#D9822B" href="about/migdalim.html">על המשחק ←</a>
             <button type="button" class="lp3-game__pick" style="--gc:#D9822B" data-game="מרוץ המבצרים">בחרו במשחק ←</button>
           </div>
         </div>
@@ -704,16 +638,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         <div class="lp3-game__body">
           <h3>מדליקים חנוכייה</h3>
           <p>משחק קבוצות לחנוכה מול מסך אחד: מסובבים סביבון, עונים ומבצעים משימות, וכל הצלחה מדליקה נר בחנוכייה.</p>
-          <div class="lp3-game__info" id="info-hanukkia" style="--gc:#4E63C6"><div>
-            <dl>
-              <dt>למי זה מתאים?</dt><dd>מסיבות חנוכה ומפגשים משפחתיים – מספיק מחשב או מסך אחד שכולם רואים.</dd>
-              <dt>גיל</dt><dd><bdi dir="ltr">6+</bdi></dd>
-              <dt>כמה משתתפים?</dt><dd>שתיים עד ארבע קבוצות, בכל גודל.</dd>
-              <dt>על המשחק</dt><dd>לכל קבוצה חנוכייה משלה. בכל תור מסובבים סביבון, והוא קובע את האתגר: שאלת טריוויה על חנוכה, שאלה על המשפחה, משימה לקבוצה או קלף נס. כל הצלחה מדליקה נר, קלפי הנס מדליקים, מכבים ומעבירים להבות, והקבוצה הראשונה שמדליקה את כל שמונת הנרות מנצחת. אפשר להוסיף שאלות ומשימות משלכם על המשפחה.</dd>
-            </dl>
-          </div></div>
           <div class="lp3-game__actions">
-            <button type="button" class="lp3-game__info-btn" style="--gc:#4E63C6" aria-expanded="false" aria-controls="info-hanukkia">על המשחק <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></button>
+            <a class="lp3-game__info-btn" style="--gc:#4E63C6" href="about/hanukkia.html">על המשחק ←</a>
             <button type="button" class="lp3-game__pick" style="--gc:#4E63C6" data-game="מדליקים חנוכייה">בחרו במשחק ←</button>
           </div>
         </div>
@@ -1038,15 +964,6 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   second.addEventListener('change', function () { updatePrice(); });
   updatePrice();
 
-  document.querySelectorAll('.lp3-game__info-btn').forEach(function (btn) {
-    btn.addEventListener('click', function () {
-      var panel = document.getElementById(btn.getAttribute('aria-controls'));
-      var open = btn.getAttribute('aria-expanded') !== 'true';
-      btn.setAttribute('aria-expanded', open ? 'true' : 'false');
-      panel.classList.toggle('is-open', open);
-    });
-  });
-
   document.querySelectorAll('.lp3-game__pick').forEach(function (btn) {
     btn.addEventListener('click', function () {
       select.value = btn.getAttribute('data-game');
@@ -1054,6 +971,16 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       document.getElementById('pricing').scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   });
+
+  // The "about the game" pages send buyers back as index.html#pick-<slug>.
+  function pickFromHash() {
+    var m = location.hash.match(/^#pick-([\w-]+)$/);
+    var link = m && document.querySelector('.lp3-game__info-btn[href="about/' + m[1] + '.html"]');
+    var pick = link && link.parentNode.querySelector('.lp3-game__pick');
+    if (pick) pick.click();
+  }
+  pickFromHash();
+  window.addEventListener('hashchange', pickFromHash);
 
   document.querySelectorAll('[data-free-cta]').forEach(function (link) {
     link.addEventListener('click', function (e) {
