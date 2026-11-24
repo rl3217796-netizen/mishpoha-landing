@@ -535,9 +535,11 @@ h1 { background: linear-gradient(180deg, #ffffff 0%, #FFC9A8 40%, #FF6A21 85%); 
 .dgpdemo-card h2{margin:0 0 8px;font-size:30px;font-weight:900;line-height:1.15}
 .dgpdemo-card p{margin:0 0 22px;font-size:17px;line-height:1.6}
 .dgpdemo-card a{display:inline-block;background:#ff6a21;color:#fff;text-decoration:none;font-weight:800;font-size:18px;padding:13px 28px;border-radius:12px;border:2px solid #24132f}
+.dgpdemo-preparing{position:fixed;inset:0;z-index:2147483645;display:grid;place-items:center;background:#150c20;color:#fbf2e3;font:800 26px 'Heebo','Segoe UI',Arial,sans-serif;direction:rtl}
 @media print{body>*{display:none!important}body::after{content:'זוהי גרסת הדגמה. את המשחק המלא להדפסה מקבלים במייל.';display:block;padding:40px;font:700 22px Arial,sans-serif;direction:rtl}}
 </style>
 <div class="dgpdemo-badge">גרסת הדגמה</div>
+<div class="dgpdemo-preparing" id="dgpdemo-preparing">מכינים משחק לדוגמה…</div>
 <div class="dgpdemo-cover" id="dgpdemo-cover" role="dialog" aria-modal="true" aria-labelledby="dgpdemo-title">
   <div class="dgpdemo-card">
     <h2 id="dgpdemo-title">נהניתם? 😊</h2>
@@ -557,6 +559,64 @@ h1 { background: linear-gradient(180deg, #ffffff 0%, #FFC9A8 40%, #FF6A21 85%); 
   window.print = function () {
     stop('בגרסת ההדגמה אי אפשר להדפיס. את המשחק המלא להדפסה מקבלים למייל.');
   };
+})();
+
+// Helpers for the per-game seed script (seeds/<game>.js) that fills sample content and skips setup.
+window.dgpDemo = (function () {
+  var preparing = document.getElementById('dgpdemo-preparing');
+  function visible(el) { return !!el && !el.disabled && !!(el.offsetParent || el.getClientRects().length); }
+  return {
+    // Runs each step until it returns true (retrying for up to 10s), then the next one.
+    // The "preparing" cover stays on until the last step is done.
+    steps: function (list) {
+      var i = 0, since = Date.now();
+      function next() {
+        if (i >= list.length) { preparing.remove(); return; }
+        var ok = false;
+        try { ok = list[i](); } catch (e) { ok = false; }
+        if (ok) { i++; since = Date.now(); setTimeout(next, 30); }
+        else if (Date.now() - since < 10000) setTimeout(next, 120);
+        else preparing.remove();
+      }
+      document.addEventListener('DOMContentLoaded', function () { setTimeout(next, 300); });
+    },
+    click: function (sel) {
+      return function () { var el = document.querySelector(sel); if (!visible(el)) return false; el.click(); return true; };
+    },
+    type: function (sel, value) {
+      return function () {
+        var el = typeof sel === 'string' ? document.querySelector(sel) : sel();
+        if (!visible(el)) return false;
+        el.value = value;
+        el.dispatchEvent(new Event('input', { bubbles: true }));
+        el.dispatchEvent(new Event('change', { bubbles: true }));
+        return true;
+      };
+    },
+    wait: function (ms) {
+      var start = 0;
+      return function () { if (!start) start = Date.now(); return Date.now() - start >= ms; };
+    },
+    run: function (fn) { return function () { fn(); return true; }; },
+  };
+})();
+</script>
+<script>
+// Four family members who already signed their promises: skip straight to the draw.
+(function () {
+  var PEOPLE = [['סבתא', 'f', 'לאפות עוגת שוקולד'], ['אבא', 'm', 'לספר סיפור לפני השינה'],
+                ['נועה', 'f', 'לעזור בהכנות לשבת'], ['יוסי', 'm', 'לשטוף את הכלים']];
+  var steps = [];
+  // the game shows a short "sealed" animation after each promise; the next one waits for it
+  function sealed() { return document.getElementById('sealed').hidden; }
+  PEOPLE.forEach(function (p) {
+    steps.push(dgpDemo.type('#name-input', p[0]), dgpDemo.click(p[1] === 'f' ? '#g-f' : '#g-m'), dgpDemo.click('#add-form button[type=submit]'));
+  });
+  steps.push(dgpDemo.click('#start'));
+  PEOPLE.forEach(function (p) {
+    steps.push(dgpDemo.type('#who', p[0]), dgpDemo.type('#promise', p[2]), dgpDemo.click('#sign'), dgpDemo.wait(200), sealed);
+  });
+  dgpDemo.steps(steps);
 })();
 </script>
 
