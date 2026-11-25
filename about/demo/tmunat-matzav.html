@@ -76,7 +76,14 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; }
 .drop .ph span { font-size: 64px; }
 .drop .ph small { color: var(--lilac); font-weight: 500; font-size: .75em; }
 .drop.has { border-style: solid; border-color: rgba(255, 255, 255, .25); }
-.drop .swap { position: absolute; bottom: 12px; right: 12px; z-index: 2; }
+.drop .pic-acts { position: absolute; bottom: 12px; right: 12px; z-index: 2; display: flex; gap: 8px; flex-wrap: wrap; }
+.thumbs { display: flex; gap: 8px; overflow-x: auto; padding: 4px 2px 8px; flex: none; }
+.thumbs button { position: relative; flex: none; width: 74px; height: 56px; border-radius: 12px; overflow: hidden; border: 3px solid transparent; background: rgba(0, 0, 0, .3); padding: 0; }
+.thumbs button img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.thumbs button b { position: absolute; top: 2px; right: 2px; min-width: 20px; height: 20px; border-radius: 10px; background: rgba(27, 12, 48, .85); color: #fff; font-size: 12px; display: grid; place-items: center; padding: 0 4px; }
+.thumbs button.on { border-color: var(--amber); }
+.thumbs button.warn::after { content: '!'; position: absolute; bottom: 2px; left: 2px; width: 18px; height: 18px; border-radius: 50%; background: var(--orange); color: #fff; font-size: 13px; font-weight: 800; display: grid; place-items: center; }
+.thumbs .plus { color: var(--amber); font-size: 28px; font-weight: 800; border: 2.5px dashed rgba(255, 191, 105, .65); }
 .time { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; font-size: clamp(17px, 1.4vw, 21px); font-weight: 700; }
 .time .val { min-width: 4.2em; text-align: center; font-family: var(--display); font-size: 1.7em; color: var(--amber); }
 .round { width: 46px; height: 46px; border-radius: 50%; background: rgba(255, 255, 255, .12); font-size: 26px; font-weight: 800; box-shadow: inset 0 0 0 2px rgba(255, 255, 255, .25); }
@@ -248,6 +255,13 @@ textarea:focus, input[type=text]:focus { outline: none; border-color: var(--ambe
   .drop { min-height: 180px; aspect-ratio: 4 / 3; flex: none; }
   .qlist { overflow: visible; }
 }
+.resume { display: grid; gap: 14px; justify-items: center; padding: clamp(14px, 2vw, 24px) clamp(18px, 3vw, 36px); text-align: center; }
+.resume p { font-size: clamp(18px, 1.8vw, 24px); font-weight: 700; }
+#paused { z-index: 60; background: rgba(12, 5, 24, .96); }
+.pause-card { display: grid; gap: 16px; justify-items: center; text-align: center; padding: clamp(22px, 4vw, 48px); max-width: 640px; border-radius: 28px; }
+.pause-icon { font-size: clamp(54px, 9vh, 90px); line-height: 1; }
+.pause-card h2 { font-size: clamp(32px, 4vw, 56px); color: var(--amber); }
+.pause-card p { font-size: clamp(17px, 1.6vw, 22px); color: var(--lilac); line-height: 1.5; }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation-duration: .01s !important; animation-iteration-count: 1 !important; } }
 
 /* ===================================================================================
@@ -504,7 +518,8 @@ dgpDemo.steps([
 <div id="app">
   <div class="corner">
     <button type="button" id="mute" title="צליל" aria-label="הפעלה או השתקה של הצליל">🔊</button>
-    <button type="button" id="quit" title="חזרה להכנה" aria-label="חזרה למסך ההכנה" hidden>✕</button>
+    <button type="button" id="pause" title="השהיה" aria-label="השהיית המשחק" hidden>⏸</button>
+    <button type="button" id="quit" title="עוצרים וממשיכים אחר כך" aria-label="עצירת המשחק, אפשר להמשיך אחר כך" hidden>✕</button>
   </div>
   <canvas id="fx"></canvas>
 
@@ -519,20 +534,43 @@ dgpDemo.steps([
       <div class="glass"><b>2</b>התמונה נעלמת</div>
       <div class="glass"><b>3</b>מי זוכר יותר פרטים?</div>
     </div>
+    <div class="resume glass" id="resume" hidden>
+      <p id="resume-text"></p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+        <button type="button" class="btn big" id="resume-go">ממשיכים מאיפה שעצרנו</button>
+        <button type="button" class="btn ghost" id="resume-new">משחק חדש</button>
+      </div>
+    </div>
     <button type="button" class="btn big" id="go-setup">מתחילים לשחק</button>
   </section>
 
+  <div class="modal" id="paused" hidden>
+    <div class="pause-card glass" role="dialog" aria-modal="true" aria-labelledby="paused-title">
+      <div class="pause-icon">⏸</div>
+      <h2 id="paused-title">המשחק מושהה</h2>
+      <p>הזמן והניקוד עצרו. אפשר גם לסגור את המשחק ולהמשיך אחר כך מאותו מקום.</p>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:center">
+        <button type="button" class="btn big" id="unpause">ממשיכים לשחק</button>
+        <button type="button" class="btn ghost" id="stop-later">עוצרים, נמשיך אחר כך</button>
+      </div>
+    </div>
+  </div>
+
   <section class="screen" id="s-setup">
-    <div class="bar"><h2>מכינים את האתגר <small>תמונה אחת, כמה שאלות, ויוצאים לדרך</small></h2></div>
+    <div class="bar"><h2>מכינים את האתגר <small>תמונה אחת או יותר, שאלות על כל תמונה, ויוצאים לדרך</small></h2></div>
     <div class="setup-grid">
       <div class="col glass">
-        <h3><i>1</i>התמונה</h3>
+        <h3><i>1</i>התמונות <span id="p-count" style="font-family:var(--body);font-size:.6em;color:var(--lilac);font-weight:600"></span></h3>
+        <div class="thumbs" id="thumbs" hidden></div>
         <div class="drop" id="drop" role="button" tabindex="0" aria-label="העלאת תמונה מהמחשב">
-          <div class="ph" id="drop-ph"><span>🖼️</span>לוחצים כאן ובוחרים תמונה מהמחשב<small>אפשר גם לגרור תמונה לכאן</small></div>
+          <div class="ph" id="drop-ph"><span>🖼️</span>לוחצים כאן ובוחרים תמונות מהמחשב<small>אפשר לבחור כמה תמונות יחד, או לגרור לכאן</small></div>
           <img id="drop-img" alt="" hidden>
-          <button type="button" class="btn small ghost swap" id="swap" hidden>החלפת תמונה</button>
+          <div class="pic-acts" id="pic-acts" hidden>
+            <button type="button" class="btn small ghost" id="swap">החלפת התמונה</button>
+            <button type="button" class="btn small ghost" id="del-pic">מחיקת התמונה</button>
+          </div>
         </div>
-        <input type="file" id="file" accept="image/*" hidden>
+        <input type="file" id="file" accept="image/*" multiple hidden>
         <div class="time">
           <span>זמן התבוננות:</span>
           <button type="button" class="round" id="t-minus" aria-label="פחות זמן">−</button>
@@ -542,7 +580,7 @@ dgpDemo.steps([
         </div>
       </div>
       <div class="col glass">
-        <h3><i>2</i>השאלות <span id="q-count" style="font-family:var(--body);font-size:.6em;color:var(--lilac);font-weight:600"></span></h3>
+        <h3><i>2</i><span id="q-title">השאלות</span> <span id="q-count" style="font-family:var(--body);font-size:.6em;color:var(--lilac);font-weight:600"></span></h3>
         <div class="qlist" id="qlist"></div>
         <button type="button" class="add" id="add-q">+ שאלה חדשה</button>
       </div>
@@ -570,7 +608,6 @@ dgpDemo.steps([
         <span class="lab">איפה זה בתמונה? (לא חובה)</span>
         <div class="markwrap" id="ed-markwrap">
           <div class="pic mark" id="ed-mark"><img id="ed-img" alt=""><div class="zone" id="ed-zone" hidden></div></div>
-          <p class="note" id="ed-noimg" hidden>כדי לסמן אזור צריך קודם להעלות תמונה.</p>
         </div>
         <p class="note">גוררים עם העכבר על התמונה כדי להקיף את האזור. בזמן חשיפת התשובה התמונה תחזור והאזור הזה יודגש.</p>
         <button type="button" class="link" id="ed-clear" style="justify-self:start" hidden>ניקוי הסימון</button>
@@ -607,7 +644,7 @@ dgpDemo.steps([
     <div class="ready" id="ready" hidden></div>
     <div class="watch-top" id="watch-top" hidden>
       <div class="dial" id="dial"><svg viewBox="0 0 100 100"><circle class="tr" cx="50" cy="50" r="44"/><circle class="pr" id="dial-pr" cx="50" cy="50" r="44"/></svg><b id="dial-n"></b></div>
-      <p>התבוננו היטב וזכרו כמה שיותר פרטים!</p>
+      <p id="watch-msg">התבוננו היטב וזכרו כמה שיותר פרטים!</p>
     </div>
     <div class="pic" id="watch-pic" hidden><img id="watch-img" alt="התמונה של האתגר"></div>
     <div class="gone-msg" id="gone" hidden>התמונה נעלמה!<small>מה אתם זוכרים?</small></div>
@@ -650,23 +687,49 @@ dgpDemo.steps([
   var wait = function (ms) { return new Promise(function (r) { setTimeout(r, reduce ? Math.min(ms, 250) : ms); }); };
 
   /* ---------- Saved game ---------- */
-  var G = { img: null, secs: 20, qs: [], mode: 'teams', style: 'turns', bonus: true, n: 2, teams: [], sound: true };
+  /* Each round is one picture with its own questions: { id, img, thumb, qs }.
+     Every picture is stored under its own key, so saving a question does not rewrite all the pictures. */
+  var MAX_PICS = 30, PIC = KEY + '-pic-';
+  var G = { rounds: [], secs: 20, mode: 'teams', style: 'turns', bonus: true, n: 2, teams: [], sound: true };
   var COL = ['#ff8a3d', '#c58bff', '#58d68d', '#5ec8ff', '#ffd24a', '#ff8fb5'], TL = 'אבגדהו';
   try {
     var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (saved && typeof saved === 'object') Object.keys(G).forEach(function (k) { if (saved[k] !== undefined) G[k] = saved[k]; });
+    if (saved && typeof saved === 'object') {
+      Object.keys(G).forEach(function (k) { if (saved[k] !== undefined) G[k] = saved[k]; });
+      /* A game saved before there were several pictures: one picture, one list of questions. */
+      if (!saved.rounds && saved.img) G.rounds = [{ img: saved.img, qs: Array.isArray(saved.qs) ? saved.qs : [] }];
+    }
+  } catch (e) {}
+  if (!Array.isArray(G.rounds)) G.rounds = [];
+  G.rounds = G.rounds.filter(function (r) {
+    if (!r || typeof r !== 'object') return false;
+    if (!Array.isArray(r.qs)) r.qs = [];
+    if (r.img && !r.id) { r.id = newId(); return savePic(r); } /* picture kept inside the old save: move it to its own key */
+    var pic = null;
+    try { pic = JSON.parse(localStorage.getItem(PIC + r.id) || 'null'); } catch (e) {}
+    if (!pic || !pic.img) return false;
+    r.img = pic.img; r.thumb = pic.thumb; return true;
+  });
+  /* Pictures left behind by deleted rounds still take up room: remove them. */
+  try {
+    var ids = G.rounds.map(function (r) { return PIC + r.id; });
+    Object.keys(localStorage).forEach(function (k) { if (k.indexOf(PIC) === 0 && ids.indexOf(k) < 0) localStorage.removeItem(k); });
   } catch (e) {}
   if (!Array.isArray(G.teams)) G.teams = [];
   G.n = Math.max(2, Math.min(6, Number(G.n) || 2));
   for (var ti = 0; ti < 6; ti++) if (typeof G.teams[ti] !== 'string' || !G.teams[ti]) G.teams[ti] = 'קבוצה ' + TL[ti];
-  var saveFailed = false;
+  var sel = 0; /* the picture being edited on the setup screen */
+  function selRound() { return G.rounds[sel] || null; }
   function save() {
-    try { localStorage.setItem(KEY, JSON.stringify(G)); saveFailed = false; }
-    catch (e) {
-      saveFailed = true;
-      try { var lite = JSON.parse(JSON.stringify(G)); lite.img = null; localStorage.setItem(KEY, JSON.stringify(lite)); } catch (e2) {}
-    }
+    var json = JSON.stringify(G, function (k, v) { return k === 'img' || k === 'thumb' ? undefined : v; });
+    try { localStorage.setItem(KEY, json); return true; } catch (e) { return false; }
   }
+  function newId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+  function savePic(r) {
+    try { localStorage.setItem(PIC + r.id, JSON.stringify({ img: r.img, thumb: r.thumb })); return true; } catch (e) { return false; }
+  }
+  function dropPic(r) { try { localStorage.removeItem(PIC + r.id); } catch (e) {} }
+  save();
 
   /* ---------- Sound ---------- */
   var ac = null;
@@ -756,41 +819,89 @@ function wowFanfare(ac) {
   function show(name) {
     document.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('on', s.id === 's-' + name); });
     current = name;
-    $('quit').hidden = !(name === 'watch' || name === 'quiz');
+    $('quit').hidden = $('pause').hidden = !(name === 'watch' || name === 'quiz');
     if (name !== 'end') stopFx();
+    if (name === 'intro') renderResume();
   }
-  $('quit').addEventListener('click', function () { run++; clearTimers(); goSetup(); });
   $('go-setup').addEventListener('click', function () { sfx.tick(); goSetup(); });
 
-  /* ---------- Setup: picture ---------- */
-  function goSetup() { renderSetup(); show('setup'); }
-  function loadImage(file) {
-    if (!file || !/^image\//.test(file.type)) return;
-    var url = URL.createObjectURL(file), im = new Image();
-    im.onload = function () {
-      var tries = [[1700, 0.86], [1200, 0.78], [900, 0.7]];
-      for (var i = 0; i < tries.length; i++) {
-        var k = Math.min(1, tries[i][0] / Math.max(im.width, im.height));
-        var c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
-        c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-        G.img = c.toDataURL('image/jpeg', tries[i][1]);
-        save();
-        if (!saveFailed) break;
-      }
-      URL.revokeObjectURL(url);
-      G.qs.forEach(function (q) { q.area = null; });
-      save(); renderSetup();
-    };
-    im.onerror = function () { URL.revokeObjectURL(url); $('setup-hint').textContent = 'לא הצלחנו לפתוח את הקובץ הזה. נסו תמונה אחרת.'; };
-    im.src = url;
+  /* ---------- Setup: pictures ---------- */
+  /* Pictures are shrunk until each fits this many characters, so 30 of them fit in the browser's storage (about 5MB). */
+  var PIC_BUDGET = 140000;
+  var SIZES = [[1400, 0.8], [1200, 0.75], [1050, 0.7], [900, 0.65], [760, 0.6], [640, 0.55], [520, 0.5]];
+  var notice = '', noticeTimer = 0;
+  function say(text) {
+    notice = text; clearTimeout(noticeTimer);
+    noticeTimer = setTimeout(function () { notice = ''; if (current === 'setup') renderSetup(); }, 9000);
   }
-  var drop = $('drop'), file = $('file');
-  drop.addEventListener('click', function () { file.click(); });
-  drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); file.click(); } });
-  file.addEventListener('change', function () { loadImage(file.files[0]); file.value = ''; });
+  function goSetup() { renderSetup(); show('setup'); }
+  function shrink(im, size, quality) {
+    var k = Math.min(1, size / Math.max(im.width, im.height));
+    var c = document.createElement('canvas'); c.width = Math.round(im.width * k); c.height = Math.round(im.height * k);
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    var url = c.toDataURL('image/jpeg', quality);
+    c.width = c.height = 0; /* frees the canvas memory now, not at some later clean-up */
+    return url;
+  }
+  /* A picture for playing, and a small copy for the list on the setup screen (so it does not redraw 30 big pictures). */
+  function compress(im) {
+    var url = '';
+    for (var i = 0; i < SIZES.length; i++) {
+      url = shrink(im, SIZES[i][0], SIZES[i][1]);
+      if (url.length <= PIC_BUDGET) break;
+    }
+    return { img: url, thumb: shrink(im, 160, 0.6) };
+  }
+  function decode(file) {
+    return new Promise(function (ok, fail) {
+      var url = URL.createObjectURL(file), im = new Image();
+      im.onload = function () { URL.revokeObjectURL(url); ok(im); };
+      im.onerror = function () { URL.revokeObjectURL(url); fail(); };
+      im.src = url;
+    });
+  }
+  /* Adds the files as new pictures, or with `at` replaces that picture (its questions stay, their marked areas are cleared). */
+  async function addPictures(files, at) {
+    var list = Array.prototype.filter.call(files || [], function (f) { return /^image\//.test(f.type); });
+    var room = at >= 0 ? 1 : MAX_PICS - G.rounds.length, bad = 0, full = false;
+    var extra = Math.max(0, list.length - room);
+    for (var n = 0; n < Math.min(room, list.length); n++) {
+      var im;
+      try { im = await decode(list[n]); } catch (e) { bad++; continue; }
+      var pic = compress(im);
+      var old = at >= 0 ? G.rounds[at] : null;
+      var r = { id: newId(), img: pic.img, thumb: pic.thumb, qs: old ? old.qs.map(function (q) { var c = Object.assign({}, q); c.area = null; return c; }) : [] };
+      if (!savePic(r)) { full = true; break; }
+      if (old) { G.rounds[at] = r; dropPic(old); sel = at; }
+      else { G.rounds.push(r); sel = G.rounds.length - 1; }
+      save();
+      renderSetup();
+    }
+    say(full ? 'הזיכרון של הדפדפן התמלא, ולכן התמונה האחרונה לא נוספה.'
+      : extra ? 'אפשר עד ' + MAX_PICS + ' תמונות במשחק, ולכן ' + extra + ' תמונות לא נוספו.'
+      : bad ? 'לא הצלחנו לפתוח ' + (bad === 1 ? 'את אחד הקבצים' : bad + ' מהקבצים') + '. נסו תמונה אחרת.' : '');
+    renderSetup();
+  }
+  var drop = $('drop'), file = $('file'), pickAt = -1;
+  function pick(at) { pickAt = at; file.multiple = at < 0; file.click(); }
+  drop.addEventListener('click', function () { pick(selRound() ? sel : -1); });
+  drop.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); pick(selRound() ? sel : -1); } });
+  file.addEventListener('change', function () { var fs = Array.prototype.slice.call(file.files); file.value = ''; addPictures(fs, pickAt); });
   ['dragenter', 'dragover'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.add('over'); }); });
   ['dragleave', 'drop'].forEach(function (ev) { drop.addEventListener(ev, function (e) { e.preventDefault(); drop.classList.remove('over'); }); });
-  drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files[0]) loadImage(e.dataTransfer.files[0]); });
+  drop.addEventListener('drop', function (e) { if (e.dataTransfer && e.dataTransfer.files.length) addPictures(e.dataTransfer.files, -1); });
+  $('del-pic').addEventListener('click', function (e) {
+    e.stopPropagation();
+    var b = this;
+    if (!b.dataset.sure) {
+      b.dataset.sure = '1'; b.textContent = 'בטוח? גם השאלות שלה יימחקו';
+      setTimeout(function () { delete b.dataset.sure; b.textContent = 'מחיקת התמונה'; }, 3000);
+      return;
+    }
+    delete b.dataset.sure; b.textContent = 'מחיקת התמונה';
+    dropPic(G.rounds[sel]); G.rounds.splice(sel, 1); sel = Math.max(0, Math.min(sel, G.rounds.length - 1));
+    save(); renderSetup();
+  });
 
   /* ---------- Setup: time ---------- */
   function setSecs(v) { G.secs = Math.max(5, Math.min(120, v)); save(); renderTime(); }
@@ -807,27 +918,52 @@ function wowFanfare(ac) {
   }
 
   /* ---------- Setup: questions ---------- */
-  function syncAR() {
-    if (!G.img) return;
+  function syncAR(img) {
+    if (!img) return;
     var im = new Image();
     im.onload = function () { if (im.width && im.height) document.documentElement.style.setProperty('--ar', (im.width / im.height).toFixed(4)); };
-    im.src = G.img;
+    im.src = img;
   }
-  syncAR();
+  function playable() { return G.rounds.filter(function (r) { return r.img && r.qs.length; }); }
+  function renderThumbs() {
+    var box = $('thumbs'); box.textContent = '';
+    box.hidden = !G.rounds.length;
+    G.rounds.forEach(function (r, i) {
+      var b = document.createElement('button'); b.type = 'button';
+      b.className = (i === sel ? 'on' : '') + (r.qs.length ? '' : ' warn');
+      b.setAttribute('aria-label', 'תמונה ' + (i + 1) + (r.qs.length ? ', ' + r.qs.length + ' שאלות' : ', עוד בלי שאלות'));
+      var im = document.createElement('img'); im.src = r.thumb || r.img; im.alt = '';
+      var n = document.createElement('b'); n.textContent = i + 1;
+      b.appendChild(im); b.appendChild(n);
+      b.addEventListener('click', function () { sel = i; renderSetup(); });
+      box.appendChild(b);
+    });
+    if (G.rounds.length < MAX_PICS) {
+      var p = document.createElement('button'); p.type = 'button'; p.className = 'plus'; p.textContent = '+';
+      p.title = 'הוספת תמונות'; p.setAttribute('aria-label', 'הוספת תמונות');
+      p.addEventListener('click', function () { pick(-1); });
+      box.appendChild(p);
+    }
+    var on = box.querySelector('.on');
+    if (on) on.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
   function renderSetup() {
-    var has = !!G.img;
-    syncAR();
-    $('drop-img').hidden = !has; $('drop-ph').hidden = has; $('swap').hidden = !has;
+    var r = selRound(), has = !!r, qs = has ? r.qs : [];
+    syncAR(has && r.img);
+    renderThumbs();
+    $('p-count').textContent = G.rounds.length ? '(' + G.rounds.length + ' מתוך ' + MAX_PICS + ')' : '';
+    $('drop-img').hidden = !has; $('drop-ph').hidden = has; $('pic-acts').hidden = !has;
     drop.classList.toggle('has', has);
-    if (has) $('drop-img').src = G.img;
+    if (has) $('drop-img').src = r.img;
     renderTime();
+    $('q-title').textContent = G.rounds.length > 1 ? 'השאלות על תמונה ' + (sel + 1) : 'השאלות';
     var list = $('qlist'); list.textContent = '';
-    if (!G.qs.length) {
+    if (!qs.length) {
       var e = document.createElement('div'); e.className = 'empty';
-      e.textContent = 'עוד אין שאלות. כותבים שאלה על פרט מהתמונה, מוסיפים 3 או 4 תשובות ומסמנים את הנכונה.';
+      e.textContent = has ? 'עוד אין שאלות על התמונה הזאת. כותבים שאלה על פרט מהתמונה, מוסיפים 3 או 4 תשובות ומסמנים את הנכונה.' : 'קודם מעלים תמונה, ואז כותבים עליה שאלות.';
       list.appendChild(e);
     }
-    G.qs.forEach(function (q, i) {
+    qs.forEach(function (q, i) {
       var card = document.createElement('div'); card.className = 'qcard';
       var n = document.createElement('div'); n.className = 'n'; n.textContent = i + 1;
       var mid = document.createElement('div'); mid.style.minWidth = '0';
@@ -839,17 +975,21 @@ function wowFanfare(ac) {
       ed.addEventListener('click', function () { openEditor(i); });
       var del = document.createElement('button'); del.type = 'button'; del.textContent = '🗑️'; del.title = 'מחיקה'; del.setAttribute('aria-label', 'מחיקת שאלה ' + (i + 1));
       del.addEventListener('click', function () {
-        if (del.dataset.sure) { G.qs.splice(i, 1); save(); renderSetup(); }
+        if (del.dataset.sure) { qs.splice(i, 1); save(); renderSetup(); }
         else { del.dataset.sure = '1'; del.textContent = 'למחוק?'; del.style.width = 'auto'; del.style.padding = '0 10px'; del.style.fontSize = '14px'; del.style.fontWeight = '700'; setTimeout(function () { if (del.isConnected) renderSetup(); }, 2600); }
       });
       acts.appendChild(ed); acts.appendChild(del);
       card.appendChild(n); card.appendChild(mid); card.appendChild(acts);
       list.appendChild(card);
     });
-    $('q-count').textContent = G.qs.length ? '(' + G.qs.length + ')' : '';
-    var ready = has && G.qs.length > 0;
+    $('q-count').textContent = qs.length ? '(' + qs.length + ')' : '';
+    $('add-q').disabled = !has;
+    var ready = playable().length > 0, empties = G.rounds.length - playable().length;
     $('go-players').disabled = !ready;
-    $('setup-hint').textContent = saveFailed ? 'התמונה גדולה מדי לשמירה בדפדפן. אפשר לשחק עכשיו, אבל בפעם הבאה יהיה צריך להעלות אותה שוב.' : !has ? 'מתחילים בהעלאת תמונה.' : !G.qs.length ? 'עכשיו מוסיפים לפחות שאלה אחת.' : 'הכול מוכן. המשחק נשמר בדפדפן הזה.';
+    $('setup-hint').textContent = notice || (!has ? 'מתחילים בהעלאת תמונה. אפשר עד ' + MAX_PICS + ' תמונות.'
+      : !ready ? 'עכשיו מוסיפים לפחות שאלה אחת.'
+      : empties ? 'תמונות בלי שאלות (מסומנות ב־!) לא ייכנסו למשחק.'
+      : 'הכול מוכן. המשחק נשמר בדפדפן הזה.');
   }
   $('add-q').addEventListener('click', function () { openEditor(-1); });
 
@@ -880,7 +1020,8 @@ function wowFanfare(ac) {
     if (ed.area) place(z, ed.area);
   }
   function openEditor(i) {
-    var q = i >= 0 ? G.qs[i] : { text: '', answers: [], correct: -1, area: null };
+    var r = selRound(); if (!r) return;
+    var q = i >= 0 ? r.qs[i] : { text: '', answers: [], correct: -1, area: null };
     ed.type = q.type === 'open' ? 'open' : 'choice';
     ed.i = i; ed.correct = ed.type === 'open' ? -1 : q.correct; ed.area = q.area ? { x: q.area.x, y: q.area.y, w: q.area.w, h: q.area.h } : null;
     $('ed-title').textContent = i >= 0 ? 'עריכת שאלה ' + (i + 1) : 'שאלה חדשה';
@@ -889,8 +1030,7 @@ function wowFanfare(ac) {
     $('ed-open').value = ed.type === 'open' ? q.answers[0] || '' : '';
     syncType();
     $('ed-err').textContent = '';
-    $('ed-mark').hidden = !G.img; $('ed-noimg').hidden = !!G.img;
-    if (G.img) $('ed-img').src = G.img;
+    $('ed-img').src = r.img;
     syncCorrect(); syncZone();
     $('editor').hidden = false;
     $('ed-text').focus();
@@ -928,7 +1068,8 @@ function wowFanfare(ac) {
     var err = !text ? 'חסרה השאלה עצמה.' : open ? (ans ? '' : 'חסרה התשובה הנכונה.') : answers.length < 3 ? 'צריך לפחות 3 תשובות.' : correct < 0 ? 'לוחצים על האות של התשובה הנכונה כדי לסמן אותה.' : '';
     if (err) { $('ed-err').textContent = err; return; }
     var q = open ? { type: 'open', text: text, answers: [ans], correct: 0, area: ed.area } : { text: text, answers: answers, correct: correct, area: ed.area };
-    if (ed.i >= 0) G.qs[ed.i] = q; else G.qs.push(q);
+    var qs = selRound().qs;
+    if (ed.i >= 0) qs[ed.i] = q; else qs.push(q);
     save(); closeEditor(); renderSetup();
     if (ed.i < 0) $('qlist').scrollTop = $('qlist').scrollHeight;
   });
@@ -936,8 +1077,8 @@ function wowFanfare(ac) {
   /* ---------- Demo sample (drawn picture, example questions) ---------- */
   $('demo').addEventListener('click', function () {
     var btn = this, LABEL = 'רוצים לראות איך זה עובד? טענו תמונה ושאלות לדוגמה';
-    if ((G.img || G.qs.length) && !btn.dataset.sure) {
-      btn.dataset.sure = '1'; btn.textContent = 'הדוגמה תחליף את התמונה והשאלות שלכם. לחצו שוב כדי להמשיך';
+    if (G.rounds.length && !btn.dataset.sure) {
+      btn.dataset.sure = '1'; btn.textContent = 'הדוגמה תחליף את התמונות והשאלות שלכם. לחצו שוב כדי להמשיך';
       setTimeout(function () { delete btn.dataset.sure; btn.textContent = LABEL; }, 4000);
       return;
     }
@@ -957,13 +1098,13 @@ function wowFanfare(ac) {
     var im = new Image();
     im.onload = function () {
       var c = document.createElement('canvas'); c.width = 1200; c.height = 750; c.getContext('2d').drawImage(im, 0, 0);
-      G.img = c.toDataURL('image/jpeg', 0.9);
-      G.qs = [
+      G.rounds.forEach(dropPic);
+      G.rounds = [{ id: newId(), img: c.toDataURL('image/jpeg', 0.9), qs: [
         { text: 'כמה נרות דלקו על השולחן?', answers: ['שניים', 'שלושה', 'ארבעה', 'חמישה'], correct: 1, area: { x: 0.29, y: 0.34, w: 0.22, h: 0.32 } },
         { text: 'באיזה צבע היו הפרחים באגרטל?', answers: ['אדום', 'לבן', 'צהוב', 'סגול'], correct: 2, area: { x: 0.73, y: 0.47, w: 0.13, h: 0.29 } },
         { text: 'איזו שעה הראה השעון על הקיר?', answers: ['שלוש', 'שש', 'תשע', 'שתים עשרה'], correct: 2, area: { x: 0.42, y: 0.05, w: 0.16, h: 0.25 } }
-      ];
-      save(); renderSetup();
+      ] }];
+      savePic(G.rounds[0]); sel = 0; save(); renderSetup();
     };
     im.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
   });
@@ -978,7 +1119,8 @@ function wowFanfare(ac) {
     for (var i = 0; i < G.n; i++) (function (i) {
       var inp = document.createElement('input'); inp.type = 'text'; inp.id = 'name-' + i; inp.maxLength = 16; inp.value = G.teams[i];
       inp.style.borderColor = inp.style.color = COL[i]; inp.setAttribute('aria-label', 'שם קבוצה ' + (i + 1));
-      inp.addEventListener('input', function () { G.teams[i] = inp.value; save(); });
+      inp.addEventListener('input', function () { G.teams[i] = inp.value; });
+      inp.addEventListener('change', save);
       box.appendChild(inp);
     })(i);
     $('bonus').checked = G.bonus;
@@ -997,10 +1139,23 @@ function wowFanfare(ac) {
   var timers = [];
   function clearTimers() { timers.forEach(clearInterval); timers = []; cancelAnimationFrame(bonusRaf); }
   var S = null;
-  async function startGame() {
+  /* S.r is the picture being played, S.i the question about it, S.k counts every question asked (for whose turn it is). */
+  function startGame() {
+    var rounds = playable();
+    if (!rounds.length) return;
+    S = { rounds: rounds, r: 0, i: 0, k: 0, total: rounds.reduce(function (t, r) { return t + r.qs.length; }, 0),
+      scores: [0, 0, 0, 0, 0, 0], out: [], right: 0, phase: '', team: 0, steal: false, t0: 0, held: 0 };
+    watchRound();
+  }
+  function round() { return S.rounds[S.r]; }
+  function curQ() { return round().qs[S.i]; }
+  async function watchRound() {
     var my = ++run;
     clearTimers();
-    S = { i: 0, scores: [0, 0, 0, 0, 0, 0], out: [], right: 0, phase: '', team: 0, steal: false, t0: 0, held: 0 };
+    S.phase = 'watch';
+    saveProgress({ r: S.r, i: 0, k: S.k });
+    syncAR(round().img);
+    $('watch-msg').textContent = (S.rounds.length > 1 ? 'תמונה ' + (S.r + 1) + ' מתוך ' + S.rounds.length + ': ' : '') + 'התבוננו היטב וזכרו כמה שיותר פרטים!';
     show('watch');
     $('s-watch').classList.remove('hot');
     $('watch-top').hidden = true; $('watch-pic').hidden = true; $('gone').hidden = true;
@@ -1008,10 +1163,10 @@ function wowFanfare(ac) {
     var ready = $('ready');
     for (var n = 3; n >= 1; n--) {
       ready.hidden = true; void ready.offsetWidth; ready.textContent = n; ready.hidden = false; sfx.tick();
-      await wait(850); if (my !== run) return;
+      await hold(850); if (my !== run) return;
     }
     ready.hidden = true;
-    $('watch-img').src = G.img;
+    $('watch-img').src = round().img;
     $('watch-top').hidden = false; $('watch-pic').hidden = false;
     var left = G.secs, C = 2 * Math.PI * 44, pr = $('dial-pr');
     pr.style.strokeDasharray = C; pr.style.transition = 'none'; pr.style.strokeDashoffset = 0;
@@ -1020,6 +1175,7 @@ function wowFanfare(ac) {
     await new Promise(function (done) {
       var step = function () {
         if (my !== run) return done();
+        if (paused) return;
         left--;
         $('dial-n').textContent = Math.max(0, left);
         pr.style.strokeDashoffset = C * (1 - left / G.secs);
@@ -1034,13 +1190,76 @@ function wowFanfare(ac) {
     $('s-watch').classList.remove('hot');
     sfx.whoosh();
     $('watch-pic').classList.add('gone');
-    await wait(900); if (my !== run) return;
+    await hold(900); if (my !== run) return;
     $('watch-top').hidden = true; $('watch-pic').hidden = true;
     $('gone').hidden = false;
-    await wait(1700); if (my !== run) return;
+    await hold(1700); if (my !== run) return;
     show('quiz'); ask();
   }
   $('go-watch').addEventListener('click', startGame);
+
+  /* ---------- Pause, and stopping to continue another time ---------- */
+  /* While paused nothing counts down. The place to continue from is saved in the browser at every new question. */
+  var paused = false, pausedAt = 0, PKEY = KEY + '-progress';
+  async function hold(ms) { await wait(ms); while (paused) await wait(200); }
+  function pause() {
+    if (paused || !(current === 'watch' || current === 'quiz')) return;
+    paused = true; pausedAt = performance.now();
+    cancelAnimationFrame(bonusRaf);
+    $('pause').hidden = $('quit').hidden = true;
+    $('paused').hidden = false; $('unpause').focus();
+  }
+  function unpause() {
+    if (!paused) return;
+    paused = false;
+    if (S && S.t0 && !S.held) S.t0 += performance.now() - pausedAt;
+    $('paused').hidden = true;
+    $('pause').hidden = $('quit').hidden = false;
+    if (current === 'quiz' && (S.phase === 'answer' || S.phase === 'buzz')) bonusLoop();
+  }
+  function stopForLater() {
+    run++; clearTimers();
+    paused = false; $('paused').hidden = true;
+    show('intro');
+  }
+  $('pause').addEventListener('click', pause);
+  $('unpause').addEventListener('click', unpause);
+  $('stop-later').addEventListener('click', stopForLater);
+  $('quit').addEventListener('click', stopForLater);
+  function signature(rounds) { return rounds.map(function (r) { return r.id + ':' + r.qs.length; }).join(','); }
+  function saveProgress(at) {
+    var p = { r: at.r, i: at.i, k: at.k, scores: S.scores, right: S.right, sig: signature(S.rounds), mode: G.mode, style: G.style, n: G.n, bonus: G.bonus };
+    try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {}
+  }
+  function clearProgress() { try { localStorage.removeItem(PKEY); } catch (e) {} }
+  /* The saved place, if it still matches the pictures and questions (editing them makes it out of date). */
+  function savedProgress() {
+    try {
+      var p = JSON.parse(localStorage.getItem(PKEY) || 'null'), rounds = playable();
+      if (!p || p.sig !== signature(rounds) || !rounds[p.r] || !rounds[p.r].qs[p.i]) return null;
+      p.rounds = rounds; return p;
+    } catch (e) { return null; }
+  }
+  function renderResume() {
+    var p = savedProgress();
+    $('resume').hidden = !p;
+    $('go-setup').classList.toggle('ghost', !!p);
+    if (!p) return;
+    var done = 0; for (var r = 0; r < p.r; r++) done += p.rounds[r].qs.length;
+    var total = p.rounds.reduce(function (t, x) { return t + x.qs.length; }, 0);
+    $('resume-text').textContent = 'יש משחק שעצרתם באמצע: הגעתם לשאלה ' + (done + p.i + 1) + ' מתוך ' + total + (p.rounds.length > 1 ? ' (תמונה ' + (p.r + 1) + ' מתוך ' + p.rounds.length + ')' : '') + '.';
+  }
+  $('resume-go').addEventListener('click', function () {
+    var p = savedProgress(); if (!p) return renderResume();
+    G.mode = p.mode; G.style = p.style; G.n = p.n; G.bonus = p.bonus; save();
+    S = { rounds: p.rounds, r: p.r, i: p.i, k: p.k, total: p.rounds.reduce(function (t, x) { return t + x.qs.length; }, 0),
+      scores: p.scores, out: [], right: p.right, phase: '', team: 0, steal: false, t0: 0, held: 0 };
+    sfx.tick();
+    if (p.i === 0) watchRound();
+    else { run++; show('quiz'); ask(); }
+  });
+  $('resume-new').addEventListener('click', function () { clearProgress(); renderResume(); });
+  renderResume();
 
   /* ---------- Quiz ---------- */
   /* Points: 50 at the start of a question, 5 less every 2 seconds, never below 10. A second try after a wrong answer is worth 25. */
@@ -1066,7 +1285,7 @@ function wowFanfare(ac) {
   function hud(bump) {
     var solo = G.mode === 'solo', box = $('hud'), n = solo ? 1 : G.n;
     box.textContent = ''; box.classList.toggle('many', n > 3);
-    var cnt = document.createElement('div'); cnt.className = 'count'; cnt.id = 'count'; cnt.textContent = 'שאלה ' + (S.i + 1) + ' מתוך ' + G.qs.length;
+    var cnt = document.createElement('div'); cnt.className = 'count'; cnt.id = 'count'; cnt.textContent = (S.rounds.length > 1 ? 'תמונה ' + (S.r + 1) + '/' + S.rounds.length + ' · ' : '') + 'שאלה ' + (S.i + 1) + ' מתוך ' + round().qs.length;
     box.appendChild(cnt);
     for (var i = 0; i < n; i++) {
       var d = document.createElement('div'); d.className = 'team'; d.id = 'hud-' + i; d.style.color = COL[i];
@@ -1097,10 +1316,11 @@ function wowFanfare(ac) {
     Array.prototype.forEach.call($('opts').children, function (b, k) { if ('disabled' in b) b.disabled = lock || k === S.wrong; });
   }
   function ask() {
-    var q = G.qs[S.i], race = isRace();
+    saveProgress({ r: S.r, i: S.i, k: S.k });
+    var q = curQ(), race = isRace();
     S.steal = false; S.held = 0; S.wrong = -1; S.out = [];
     S.phase = race ? 'buzz' : 'answer';
-    S.team = G.mode === 'solo' ? 0 : race ? -1 : S.i % G.n;
+    S.team = G.mode === 'solo' ? 0 : race ? -1 : S.k % G.n;
     $('play').classList.remove('rev'); $('s-quiz').classList.remove('rev'); $('verdict').hidden = true; $('side').hidden = true; $('spot').hidden = true; $('next').hidden = true;
     var qt = $('qtext'); qt.textContent = q.text; qt.style.animation = 'none'; void qt.offsetWidth; qt.style.animation = '';
     var box = $('opts'); box.textContent = '';
@@ -1137,8 +1357,8 @@ function wowFanfare(ac) {
     hud(); bonusLoop();
   }
   function choose(k) {
-    if (current !== 'quiz' || S.phase !== 'answer' || k === S.wrong || G.qs[S.i].type === 'open') return;
-    var q = G.qs[S.i], btns = $('opts').children;
+    if (current !== 'quiz' || S.phase !== 'answer' || k === S.wrong || curQ().type === 'open') return;
+    var q = curQ(), btns = $('opts').children;
     if (!S.held) S.held = performance.now();
     if (k === q.correct) {
       var pts = pointsNow();
@@ -1160,7 +1380,7 @@ function wowFanfare(ac) {
     $('opts').classList.remove('lock');
     $('bonus-box').hidden = true; buzzers(false);
     setTurn('', -1);
-    $('rev-img').src = G.img;
+    $('rev-img').src = round().img;
     var spot = $('spot'); spot.hidden = !q.area;
     if (q.area) { place(spot, q.area); spot.style.animation = 'none'; void spot.offsetWidth; spot.style.animation = ''; }
     $('side').hidden = false; $('play').classList.add('rev'); $('s-quiz').classList.add('rev');
@@ -1174,7 +1394,7 @@ function wowFanfare(ac) {
   /* Open question: the answer is said aloud, then the host reveals it and says who got it. */
   function openReveal() {
     if (current !== 'quiz' || S.phase !== 'answer') return;
-    var q = G.qs[S.i], race = isRace(), box = $('opts');
+    var q = curQ(), race = isRace(), box = $('opts');
     if (!S.held) S.held = performance.now();
     S.phase = 'judge'; S.first = S.team;
     cancelAnimationFrame(bonusRaf);
@@ -1194,7 +1414,7 @@ function wowFanfare(ac) {
   }
   function judge(team) {
     if (S.phase !== 'judge') return;
-    var q = G.qs[S.i], ok = team >= 0, pts = 0;
+    var q = curQ(), ok = team >= 0, pts = 0;
     if (ok) {
       S.steal = team !== S.first;
       pts = pointsNow();
@@ -1206,7 +1426,7 @@ function wowFanfare(ac) {
     celebrate(ok);
   }
   function reveal(ok, k, pts) {
-    var q = G.qs[S.i], btns = $('opts').children;
+    var q = curQ(), btns = $('opts').children;
     S.phase = 'reveal';
     cancelAnimationFrame(bonusRaf);
     Array.prototype.forEach.call(btns, function (b, n) {
@@ -1219,21 +1439,28 @@ function wowFanfare(ac) {
     celebrate(ok);
   }
   function celebrate(ok) {
+    if (S.i + 1 < round().qs.length) saveProgress({ r: S.r, i: S.i + 1, k: S.k + 1 });
+    else if (S.r + 1 < S.rounds.length) saveProgress({ r: S.r + 1, i: 0, k: S.k + 1 });
+    else clearProgress();
     hud(ok ? S.team : -1);
     if (ok) { sfx.good(); burst(90); } else sfx.bad();
-    var nx = $('next'); nx.textContent = S.i + 1 < G.qs.length ? 'לשאלה הבאה' : 'לתוצאות!'; nx.hidden = false;
+    var nx = $('next'); nx.textContent = S.i + 1 < round().qs.length ? 'לשאלה הבאה' : S.r + 1 < S.rounds.length ? 'לתמונה הבאה!' : 'לתוצאות!'; nx.hidden = false;
   }
   $('next').addEventListener('click', function () {
     if (S.phase !== 'reveal') return;
-    if (S.i + 1 < G.qs.length) { S.i++; ask(); } else finish();
+    S.k++;
+    if (S.i + 1 < round().qs.length) { S.i++; ask(); }
+    else if (S.r + 1 < S.rounds.length) { S.r++; S.i = 0; watchRound(); }
+    else finish();
   });
   document.addEventListener('keydown', function (e) {
     if (!$('editor').hidden) { if (e.key === 'Escape') closeEditor(); return; }
+    if (paused) { if (e.key === 'Escape') unpause(); return; }
     if (current !== 'quiz' || !S) return;
     var n = '123456'.indexOf(e.key);
     if (S.phase === 'buzz') { if (n >= 0 && n < G.n) buzz(n); }
-    else if (S.phase === 'answer' && G.qs[S.i].type === 'open') { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openReveal(); } }
-    else if (S.phase === 'answer') { if (n >= 0 && n < G.qs[S.i].answers.length) choose(n); }
+    else if (S.phase === 'answer' && curQ().type === 'open') { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); openReveal(); } }
+    else if (S.phase === 'answer') { if (n >= 0 && n < curQ().answers.length) choose(n); }
     else if (S.phase === 'reveal' && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); $('next').click(); }
   });
 
@@ -1248,8 +1475,8 @@ function wowFanfare(ac) {
       d.appendChild(n); d.appendChild(s); fin.appendChild(d);
     }
     if (solo) {
-      $('end-title').textContent = S.right === G.qs.length ? 'זיכרון צילומי!' : S.right ? 'כל הכבוד!' : 'בפעם הבאה!';
-      $('end-sub').textContent = 'עניתם נכון על ' + S.right + ' מתוך ' + G.qs.length + ' שאלות';
+      $('end-title').textContent = S.right === S.total ? 'זיכרון צילומי!' : S.right ? 'כל הכבוד!' : 'בפעם הבאה!';
+      $('end-sub').textContent = 'עניתם נכון על ' + S.right + ' מתוך ' + S.total + ' שאלות';
       fin.classList.remove('many');
       card('הניקוד הסופי', S.scores[0], COL[0], true);
     } else {
@@ -1259,6 +1486,7 @@ function wowFanfare(ac) {
       fin.classList.toggle('many', G.n > 3);
       sc.forEach(function (v, i) { card(teamName(i), v, COL[i], winners === 1 && v === top); });
     }
+    clearProgress();
     show('end'); sfx.win(); party();
   }
   $('again').addEventListener('click', startGame);
