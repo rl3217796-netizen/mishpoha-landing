@@ -775,6 +775,12 @@ img { max-width: 100%; display: block; }
   margin: 0 auto;
 }
 
+.pg__paused-overlay { background: color-mix(in srgb, var(--mantine-color-brandPurple-9, #2a1846) 88%, transparent) !important; backdrop-filter: blur(10px); }
+.pg__paused { max-width: 440px; text-align: center; }
+.pg__paused .ui-modal-title { font-size: 28px; }
+.pg__paused-icon { color: var(--mantine-color-accent-6); display: flex; justify-content: center; margin-bottom: 6px; }
+.ui-resume { display: grid; gap: 12px; padding: 14px 16px; border-radius: 16px; background: color-mix(in srgb, var(--mantine-color-accent-5) 12%, transparent); border: 1.5px solid color-mix(in srgb, var(--mantine-color-accent-5) 45%, transparent); }
+.ui-resume p { margin: 0; line-height: 1.5; }
 .pg__stage--paused {
   opacity: 0.55;
   pointer-events: none;
@@ -3900,6 +3906,33 @@ var App = (function () {
     Store.saveContent(state.content).catch(function () {});
   }
 
+  /* A game in progress is saved after every move, so it can be continued after closing the browser. */
+  var PROGRESS_KEY = 'dgp-personality-progress';
+
+  function saveProgress() {
+    if (!state.session || state.session.status === 'Finished') return;
+    try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(state.session)); } catch (e) {}
+  }
+
+  function clearProgress() {
+    try { localStorage.removeItem(PROGRESS_KEY); } catch (e) {}
+  }
+
+  /** The saved game, if it still fits the content (a deleted character or question makes it out of date). */
+  function savedProgress() {
+    var session = null;
+    try { session = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null'); } catch (e) { return null; }
+    if (!session || !session.gameState || session.status === 'Finished') return null;
+    var characterIds = {}, questionIds = {};
+    state.content.characters.forEach(function (c) { characterIds[c.id] = true; });
+    state.content.questions.forEach(function (q) { questionIds[q.id] = true; });
+    var gs = session.gameState;
+    var fits = gs.windows.length > 0 &&
+      gs.windows.every(function (w) { return characterIds[w.characterContentId]; }) &&
+      gs.remainingQuestionIds.concat(gs.usedQuestionIds).every(function (id) { return questionIds[id]; });
+    return fits ? session : null;
+  }
+
   function warmImageUrls(then) {
     var ids = state.content.characters
       .map(function (c) { return c.imageId; })
@@ -3969,6 +4002,7 @@ var App = (function () {
   // ------------------------------------------------------------------
 
   function render() {
+    if (state.screen === 'play') saveProgress();
     root.innerHTML = screens[state.screen]();
     afterRender[state.screen] && afterRender[state.screen]();
   }
@@ -4119,6 +4153,20 @@ var App = (function () {
     }).join('') + '</div>';
   }
 
+  function renderResumeOffer() {
+    var saved = savedProgress();
+    if (!saved) return '';
+    var left = saved.gameState.windows.filter(function (w) { return !w.isOpen; }).length;
+    var names = saved.players.map(function (p) { return p.displayName; });
+    return '<div class="ui-resume">' +
+      '<p><b>יש משחק שעצרתם באמצע.</b> ' + esc(formatGuesserNames(names)) + ', אחרי ' + saved.state.currentRound +
+      ' שאלות, ' + (left === 1 ? 'נשארה דמות אחת לגלות.' : 'נשארו ' + left + ' דמויות לגלות.') + '</p>' +
+      '<div class="ui-group">' +
+      '<button class="ui-btn ui-btn--gradient" data-action="resume-game">' + icon('playerPlay', 16) + ' ממשיכים מאיפה שעצרנו</button>' +
+      '<button class="ui-btn ui-btn--subtle" data-action="discard-saved-game">משחק חדש</button>' +
+      '</div></div>';
+  }
+
   function renderHome() {
     var content = state.content;
     var activeQ = Personality.activeQuestions(content);
@@ -4144,6 +4192,7 @@ var App = (function () {
       '<div class="ui-home-stat ui-home-stat--questions"><span class="ui-home-stat-icon">' + icon('sparkles', 18) + '</span>' +
       '<span><span class="ui-home-stat-value">' + activeQ.length + '</span><br/><span class="ui-home-stat-label">שאלות פעילות</span></span></div>' +
       '</div>' +
+      renderResumeOffer() +
       (canStart ? '' : '<p class="ui-text-dimmed">צריך לפחות שאלה פעילה אחת ודמות אחת עם תשובות מלאות לכל השאלות הפעילות כדי להתחיל.</p>') +
       '<div class="ui-group">' +
       '<button class="ui-btn ui-btn--gradient" data-action="go-setup"' + (canStart ? '' : ' disabled') + '>' + icon('playerPlay', 16) + ' התחלת משחק</button>' +
@@ -4396,6 +4445,7 @@ var App = (function () {
       '</div></div>';
 
     if (ui.confirmQuit) html += renderQuitConfirm();
+    else if (gs.isPaused) html += renderPausedModal();
     if (ui.showInstructions) html += renderInstructionsModal(false);
 
     html += '<div class="pg__stage' + (gs.isPaused ? ' pg__stage--paused' : '') + '">';
@@ -4581,14 +4631,28 @@ var App = (function () {
     );
   }
 
+  function renderPausedModal() {
+    return (
+      '<div class="ui-modal-overlay pg__paused-overlay"><div class="ui-modal pg__paused" role="dialog" aria-modal="true" aria-labelledby="paused-title">' +
+      '<div class="pg__paused-icon">' + icon('playerPause', 40) + '</div>' +
+      '<div class="ui-modal-title" id="paused-title">המשחק מושהה</div>' +
+      '<p class="ui-text-sm ui-text-dimmed">אפשר גם לסגור את המשחק ולהמשיך אחר כך מאותו מקום, עם אותו ניקוד.</p>' +
+      '<div class="ui-group" style="justify-content:center;margin-top:16px">' +
+      '<button class="ui-btn ui-btn--gradient" data-action="toggle-pause">' + icon('playerPlay', 16) + ' ממשיכים לשחק</button>' +
+      '<button class="ui-btn ui-btn--light" data-action="stop-for-later">עוצרים, נמשיך אחר כך</button></div></div></div>'
+    );
+  }
+
   function renderQuitConfirm() {
     return (
-      '<div class="ui-modal-overlay"><div class="ui-modal" style="max-width:360px" role="dialog" aria-modal="true">' +
+      '<div class="ui-modal-overlay"><div class="ui-modal" style="max-width:420px" role="dialog" aria-modal="true">' +
       '<div class="ui-modal-title">לצאת מהמשחק?</div>' +
-      '<p class="ui-text-sm">הניקוד וההתקדמות של הסבב הנוכחי יאבדו. התוכן (דמויות ושאלות) יישאר שמור.</p>' +
+      '<p class="ui-text-sm">המשחק נשמר, ואפשר להמשיך אחר כך מאותו מקום עם אותו ניקוד. ' +
+      'אם מסיימים, הניקוד וההתקדמות נמחקים. הדמויות והשאלות נשארות שמורות בכל מקרה.</p>' +
       '<div class="ui-group ui-group--end" style="margin-top:16px">' +
       '<button class="ui-btn ui-btn--subtle" data-action="cancel-quit">ביטול</button>' +
-      '<button class="ui-btn ui-btn--danger" data-action="confirm-quit">יציאה לדף הבית</button></div></div></div>'
+      '<button class="ui-btn ui-btn--danger" data-action="confirm-quit">מסיימים את המשחק</button>' +
+      '<button class="ui-btn ui-btn--gradient" data-action="stop-for-later">עוצרים, נמשיך אחר כך</button></div></div></div>'
     );
   }
 
@@ -4925,15 +4989,44 @@ var App = (function () {
   function startGame() {
     var names = state.ui.playerNames.map(function (n) { return n.trim(); }).filter(Boolean);
     if (names.length === 0) return;
-    state.session = Personality.startSession(state.content, names);
+    enterPlay(Personality.startSession(state.content, names));
+    Sound.personality.gameStart();
+  }
+
+  function enterPlay(session) {
+    state.session = session;
     state.ui.selectedPlayerIds = {};
     state.ui.guessWindowIndex = null;
     state.ui.guessResult = null;
     state.ui.justRevealedIndex = null;
     state.ui.scoreFlashes = {};
+    state.ui.confirmQuit = false;
     state.screen = 'play';
     render();
+  }
+
+  function resumeGame() {
+    var saved = savedProgress();
+    if (!saved) { render(); return; }
+    saved.gameState.isPaused = false;
+    saved.state.currentPhase = 'Playing';
+    enterPlay(saved);
     Sound.personality.gameStart();
+  }
+
+  function discardSavedGame() {
+    clearProgress();
+    render();
+  }
+
+  /** Leaves the game for now; it stays saved and the home screen offers to continue it. */
+  function stopForLater() {
+    clearPlayTimers();
+    closeGuessModal();
+    state.ui.confirmQuit = false;
+    saveProgress();
+    state.session = null;
+    goHome();
   }
 
   // ------------------------------------------------------------------
@@ -4949,6 +5042,7 @@ var App = (function () {
 
   function enterResultsScreen() {
     clearPlayTimers();
+    clearProgress();
     state.ui.resultsPhase = 'idle';
     state.ui.celebrationStarted = false;
     state.screen = 'results';
@@ -4992,6 +5086,7 @@ var App = (function () {
     clearPlayTimers();
     state.ui.confirmQuit = false;
     state.session = null;
+    clearProgress();
     goHome();
   }
 
@@ -5200,6 +5295,9 @@ var App = (function () {
     'request-quit-game': requestQuitGame,
     'cancel-quit': cancelQuit,
     'confirm-quit': confirmQuitGame,
+    'stop-for-later': stopForLater,
+    'resume-game': resumeGame,
+    'discard-saved-game': discardSavedGame,
     'select-question': function (el) { selectQuestion(el.getAttribute('data-id')); },
     'select-player': function (el) { selectPlayer(el.getAttribute('data-id')); },
     'select-window': function (el) { selectWindow(Number(el.getAttribute('data-index'))); },
@@ -5238,6 +5336,11 @@ var App = (function () {
     else if (bind === 'playerName') state.ui.playerNames[Number(target.getAttribute('data-index'))] = target.value;
   }
 
+  /** Escape continues a paused game (listened for on the whole page, since focus is often on nothing). */
+  function onEscape(event) {
+    if (event.key === 'Escape' && state.screen === 'play' && state.session && state.session.gameState.isPaused && !state.ui.confirmQuit) togglePause();
+  }
+
   function onKeydown(event) {
     if (event.key !== 'Enter') return;
     var target = event.target;
@@ -5257,6 +5360,7 @@ var App = (function () {
     root.addEventListener('change', onChange);
     root.addEventListener('input', onInput);
     root.addEventListener('keydown', onKeydown);
+    document.addEventListener('keydown', onEscape);
 
     var startScreen = 'home';
 
