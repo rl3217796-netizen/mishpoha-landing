@@ -62,6 +62,9 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; }
 .panel { width: 100%; max-width: 900px; padding: 18px 22px; }
 .panel h3 { font-size: 24px; margin-bottom: 12px; color: var(--cream); }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+#paused { z-index: 60; background: rgba(15, 6, 30, .97); }
+.resume { display: grid; gap: 14px; justify-items: center; padding: clamp(14px, 2vw, 24px) clamp(18px, 3vw, 36px); max-width: 900px; }
+.resume p { margin: 0; font-size: clamp(18px, 1.8vw, 24px); font-weight: 700; }
 .chip { padding: .45em 1.1em; border-radius: 999px; background: rgba(255, 255, 255, .1); font-weight: 700; font-size: 18px; box-shadow: inset 0 0 0 1.5px rgba(255, 255, 255, .22); }
 .chip.on { background: var(--orange); box-shadow: 0 4px 0 #a83d00; }
 .team-in { display: flex; align-items: center; gap: 8px; flex: 1 1 180px; }
@@ -293,7 +296,8 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
 <div id="app">
   <div class="corner">
     <button type="button" id="mute" aria-label="צליל">🔊</button>
-    <button type="button" id="quit" hidden>יציאה</button>
+    <button type="button" id="pause" title="השהיה" aria-label="השהיית המשחק" hidden>⏸</button>
+    <button type="button" id="quit" title="עוצרים וממשיכים אחר כך" hidden>יציאה</button>
   </div>
 
   <section class="screen on" id="s-intro">
@@ -311,6 +315,13 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       <div class="glass"><b>1</b>תשובה נכונה = קומה חדשה</div>
       <div class="glass"><b>2</b>בנייה נועזת: 2 קומות, אבל טעות מפילה</div>
       <div class="glass"><b>3</b>קלפי הפתעה: גניבה, הקפאה ורעידת אדמה</div>
+    </div>
+    <div class="glass resume" id="resume" hidden>
+      <p id="resume-text"></p>
+      <div class="row" style="justify-content:center">
+        <button type="button" class="btn big" id="resume-go">ממשיכים מאיפה שעצרנו</button>
+        <button type="button" class="btn ghost" id="resume-new">משחק חדש</button>
+      </div>
     </div>
     <button type="button" class="btn big" id="go-setup">מתחילים לשחק</button>
   </section>
@@ -389,6 +400,18 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     </div>
   </div>
 
+  <div class="overlay" id="paused" hidden>
+    <div class="glass card mini" role="dialog" aria-modal="true" aria-labelledby="paused-title" style="--tc:var(--amber)">
+      <div class="logo">⏸</div>
+      <div class="q" id="paused-title">המשחק מושהה</div>
+      <p>הזמן עצר. אפשר גם לסגור את המשחק ולהמשיך אחר כך מאותו מקום, עם אותם מבצרים.</p>
+      <div class="row" style="justify-content:center">
+        <button type="button" class="btn big" id="unpause">ממשיכים לשחק</button>
+        <button type="button" class="btn ghost" id="stop-later">עוצרים, נמשיך אחר כך</button>
+      </div>
+    </div>
+  </div>
+
   <div class="overlay" id="editor" hidden>
     <div class="glass card ed">
       <h3 style="font-size:28px">עריכת שאלה</h3>
@@ -413,7 +436,13 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   var COL = ['#ff8a3d', '#c58bff', '#58d68d', '#5ec8ff'];
   var NAMES = ['הכתומים', 'הסגולים', 'הירוקים', 'הכחולים'];
   var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var wait = function (ms) { return new Promise(function (r) { setTimeout(r, reduce ? Math.min(ms, 250) : ms); }); };
+  /* While the game is paused every wait in it stays waiting, so nothing moves on. */
+  var paused = false;
+  var wait = function (ms) {
+    return new Promise(function (r) {
+      setTimeout(function hold() { if (paused) setTimeout(hold, 200); else r(); }, reduce ? Math.min(ms, 250) : ms);
+    });
+  };
   function esc(v) { return String(v).replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; }); }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 
@@ -513,16 +542,17 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   var run = 0, timer = null;
   function show(name) {
     document.querySelectorAll('.screen').forEach(function (s) { s.classList.toggle('on', s.id === 's-' + name); });
-    $('quit').hidden = name !== 'game';
+    $('quit').hidden = $('pause').hidden = name !== 'game';
     if (name !== 'end') stopFx();
+    if (name === 'intro') renderResume();
   }
   function stopGame() { run++; clearInterval(timer); $('ask').hidden = true; $('card').hidden = true; $('actions').hidden = true; S.pick = S.mode = S.choose = S.cont = null; }
-  $('quit').addEventListener('click', function () {
-    var b = this;
-    if (b.dataset.sure) { delete b.dataset.sure; b.textContent = 'יציאה'; stopGame(); goSetup(); return; }
-    b.dataset.sure = '1'; b.textContent = 'לצאת מהמשחק?';
-    setTimeout(function () { delete b.dataset.sure; b.textContent = 'יציאה'; }, 3000);
-  });
+  /* Leaving the game keeps it saved: the opening screen offers to continue it. */
+  function stopForLater() {
+    paused = false; $('paused').hidden = true;
+    stopGame(); show('intro');
+  }
+  $('quit').addEventListener('click', stopForLater);
 
   /* ---------- Setup ---------- */
   function chips(box, values, current, label, pick) {
@@ -745,6 +775,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   function next() { S.turn = (S.turn + 1) % G.n; turn(); }
   async function turn() {
     var my = run, t = S.turn;
+    saveProgress();
     render();
     if (S.frozen[t]) {
       banner(teamName(t) + ' קפואים – התור מדלג', t); sfx.hot();
@@ -803,6 +834,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
         void fill.offsetWidth; fill.style.transition = '';
         fill.style.width = (left - 1) / left * 100 + '%';
         timer = setInterval(function () {
+          if (paused) return;
           left--;
           fill.style.width = Math.max(0, left - 1) / G.secs * 100 + '%';
           $('ask-sec').textContent = Math.max(0, left); $('ask-bar').classList.toggle('hot', left <= 5);
@@ -813,11 +845,12 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   }
   document.addEventListener('keydown', function (e) {
     var k = '1234'.indexOf(e.key);
-    if (k >= 0 && S.pick && !$('ask').hidden) S.pick(k);
+    if (k >= 0 && !paused && S.pick && !$('ask').hidden) S.pick(k);
   });
 
   /* ---------- End ---------- */
   function endGame() {
+    clearProgress();
     var order = [];
     for (var t = 0; t < G.n; t++) order.push(t);
     var score = function (t) { return S.h[t]; };
@@ -841,6 +874,61 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   function stopFx() { document.querySelectorAll('.confetti').forEach(function (c) { c.remove(); }); }
   $('start').addEventListener('click', startGame);
   $('again').addEventListener('click', startGame);
+
+  /* ---------- Pause, and stopping to continue another time ---------- */
+  /* The game is saved at the start of every turn; continuing starts that turn again. */
+  var PKEY = KEY + '-progress';
+  function questionsSig() { return JSON.stringify(G.qs).length; }
+  function saveProgress() {
+    var p = { h: S.h, frozen: S.frozen, shield: S.shield, turn: S.turn, deck: S.deck,
+      n: G.n, teams: G.teams.slice(0, G.n), goal: G.goal, secs: G.secs, sig: questionsSig() };
+    try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {}
+  }
+  function clearProgress() { try { localStorage.removeItem(PKEY); } catch (e) {} }
+  function savedProgress() {
+    try {
+      var p = JSON.parse(localStorage.getItem(PKEY) || 'null');
+      return p && Array.isArray(p.h) && p.h.length === p.n && p.n >= 2 ? p : null;
+    } catch (e) { return null; }
+  }
+  function renderResume() {
+    var p = savedProgress();
+    $('resume').hidden = !p;
+    $('go-setup').classList.toggle('ghost', !!p);
+    if (!p) return;
+    var name = function (i) { return (p.teams[i] || '').trim() || NAMES[i]; };
+    $('resume-text').textContent = 'יש משחק שעצרתם באמצע: ' +
+      p.h.map(function (h, i) { return name(i) + ' עם ' + floorsText(h); }).join(', ') +
+      ' (מנצחים ב־' + p.goal + '). התור של ' + name(p.turn) + '.';
+  }
+  $('resume-go').addEventListener('click', function () {
+    var p = savedProgress(); if (!p) return renderResume();
+    stopGame();
+    G.n = p.n; G.goal = p.goal; G.secs = p.secs;
+    p.teams.forEach(function (name, i) { G.teams[i] = name; });
+    save();
+    S.h = p.h; S.frozen = p.frozen; S.shield = p.shield; S.turn = p.turn;
+    S.deck = p.sig === questionsSig() ? p.deck || [] : []; /* questions were edited meanwhile: shuffle afresh */
+    sfx.tick(); show('game'); turn();
+  });
+  $('resume-new').addEventListener('click', function () { clearProgress(); renderResume(); });
+  function pause() {
+    if (paused || !$('s-game').classList.contains('on')) return;
+    paused = true;
+    $('pause').hidden = $('quit').hidden = true;
+    $('paused').hidden = false; $('unpause').focus();
+  }
+  function unpause() {
+    if (!paused) return;
+    paused = false;
+    $('paused').hidden = true;
+    $('pause').hidden = $('quit').hidden = false;
+  }
+  $('pause').addEventListener('click', pause);
+  $('unpause').addEventListener('click', unpause);
+  $('stop-later').addEventListener('click', stopForLater);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && paused) unpause(); });
+  renderResume();
 })();
 </script>
 </body>
