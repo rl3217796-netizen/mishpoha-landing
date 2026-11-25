@@ -699,6 +699,13 @@ select { font: inherit; }
   opacity: 0.45;
   pointer-events: none;
 }
+/* Pause window and the "continue where we stopped" box: the same as in אישיות. */
+.mmx__paused-overlay { background: color-mix(in srgb, var(--mantine-color-brandPurple-9, #2a1846) 88%, transparent) !important; backdrop-filter: blur(10px); }
+.mmx__paused { max-width: 440px; text-align: center; }
+.mmx__paused .ui-modal-title { font-size: 28px; }
+.mmx__paused-icon { color: var(--mantine-color-accent-6); display: flex; justify-content: center; margin-bottom: 6px; }
+.ui-resume { display: grid; gap: 12px; padding: 14px 16px; border-radius: 16px; background: color-mix(in srgb, var(--mantine-color-accent-5) 12%, transparent); border: 1.5px solid color-mix(in srgb, var(--mantine-color-accent-5) 45%, transparent); }
+.ui-resume p { margin: 0; line-height: 1.5; }
 
 .mmx__board {
   display: grid;
@@ -2705,8 +2712,8 @@ var App = (function () {
       editingItem: null, // pair being edited, or null
       deleteTarget: null, // { id, title } | null
       playerNames: [''],
-      confirmQuit: false,
       showInstructions: false,
+      confirmQuit: false,
       hiddenOverride: {}, // card index -> true, forces a settled mismatch face-down before state.hiddenOverride would otherwise show it
       mismatchTimer: null,
       timerInterval: null,
@@ -2966,8 +2973,9 @@ var App = (function () {
       '<span><span class="ui-home-stat-value">' + content.settings.numberOfPairs + '</span><br/><span class="ui-home-stat-label">זוגות נדרשים</span></span></div>' +
       '</div>' +
       (canStart ? '' : '<p class="ui-text-dimmed">צריך מספיק זוגות מהסוג שנבחר בהגדרות (משפחתיים ו/או מובנים) כדי להתחיל.</p>') +
+      renderResume() +
       '<div class="ui-group">' +
-      '<button class="ui-btn ui-btn--gradient" data-action="go-setup"' + (canStart ? '' : ' disabled') + '>' + icon('playerPlay', 16) + ' התחלת משחק</button>' +
+      '<button class="ui-btn ' + (savedProgress() ? 'ui-btn--light' : 'ui-btn--gradient') + '" data-action="go-setup"' + (canStart ? '' : ' disabled') + '>' + icon('playerPlay', 16) + ' התחלת משחק</button>' +
       '<button class="ui-btn ui-btn--light" data-action="go-content">' + icon('pencil', 16) + ' ניהול זוגות והגדרות</button>' +
       '</div></div></div>';
 
@@ -3218,12 +3226,13 @@ var App = (function () {
       '<button class="mmx__pause-btn" data-action="quit-to-home" aria-label="חזרה לדף הבית" title="חזרה לדף הבית">' + icon('home', 17) + '</button>' +
       '<span class="mmx__round-pill' + (gs.isPaused ? ' mmx__round-pill--paused' : '') + '">' +
       (gs.isPaused ? 'מושהה' : currentPlayer ? 'תורו של ' + esc(currentPlayer.displayName) : '') + '</span>' +
-      '<button class="mmx__pause-btn" data-action="toggle-pause" aria-label="' + (gs.isPaused ? 'המשך משחק' : 'השהה משחק') + '">' +
+      '<button class="mmx__pause-btn" data-action="toggle-pause" title="השהיה" aria-label="' + (gs.isPaused ? 'המשך משחק' : 'השהה משחק') + '">' +
       icon(gs.isPaused ? 'playerPlay' : 'playerPause', 18) + '</button>' +
       '<button class="ui-help-btn" data-action="open-instructions" aria-label="הוראות המשחק" title="הוראות המשחק">?</button>' +
       '</div></div>';
 
     if (ui.confirmQuit) html += renderQuitConfirm();
+    else if (gs.isPaused) html += renderPausedModal();
     if (ui.showInstructions) html += renderInstructionsModal(false);
 
     if (gs.showTimer || gs.showRemainingPairs) {
@@ -3296,6 +3305,8 @@ var App = (function () {
   function afterRenderPlay() {
     manageTimerInterval();
     fitMemoryBoard();
+    var unpause = document.getElementById('unpause');
+    if (unpause) unpause.focus();
   }
 
   /** Picks whichever rows x cols split of the board fills the visible .mmx__stage (both
@@ -3354,15 +3365,131 @@ var App = (function () {
     }
   }
 
+  function renderPausedModal() {
+    return (
+      '<div class="ui-modal-overlay mmx__paused-overlay"><div class="ui-modal mmx__paused" role="dialog" aria-modal="true" aria-labelledby="paused-title">' +
+      '<div class="mmx__paused-icon">' + icon('playerPause', 40) + '</div>' +
+      '<div class="ui-modal-title" id="paused-title">המשחק מושהה</div>' +
+      '<p class="ui-text-sm ui-text-dimmed">הזמן עצר. אפשר גם לסגור את המשחק ולהמשיך אחר כך מאותו מקום, עם אותו ניקוד.</p>' +
+      '<div class="ui-group" style="justify-content:center;margin-top:16px">' +
+      '<button class="ui-btn ui-btn--gradient" data-action="toggle-pause" id="unpause">' + icon('playerPlay', 16) + ' ממשיכים לשחק</button>' +
+      '<button class="ui-btn ui-btn--light" data-action="stop-later">עוצרים, נמשיך אחר כך</button></div></div></div>'
+    );
+  }
+
   function renderQuitConfirm() {
     return (
-      '<div class="ui-modal-overlay"><div class="ui-modal" style="max-width:360px" role="dialog" aria-modal="true">' +
+      '<div class="ui-modal-overlay"><div class="ui-modal" style="max-width:420px" role="dialog" aria-modal="true">' +
       '<div class="ui-modal-title">לצאת מהמשחק?</div>' +
-      '<p class="ui-text-sm">הניקוד וההתקדמות של המשחק הנוכחי יאבדו. התוכן (הזוגות) יישאר שמור.</p>' +
+      '<p class="ui-text-sm">המשחק נשמר, ואפשר להמשיך אחר כך מאותו מקום עם אותו ניקוד. ' +
+      'אם מסיימים, הניקוד וההתקדמות נמחקים. הזוגות נשארים שמורים בכל מקרה.</p>' +
       '<div class="ui-group ui-group--end" style="margin-top:16px">' +
       '<button class="ui-btn ui-btn--subtle" data-action="cancel-quit">ביטול</button>' +
-      '<button class="ui-btn ui-btn--danger" data-action="confirm-quit">יציאה לדף הבית</button></div></div></div>'
+      '<button class="ui-btn ui-btn--danger" data-action="confirm-quit">מסיימים את המשחק</button>' +
+      '<button class="ui-btn ui-btn--gradient" data-action="stop-later">עוצרים, נמשיך אחר כך</button></div></div></div>'
     );
+  }
+
+  // ------------------------------------------------------------------
+  // Pause, and stopping to continue another time
+  // ------------------------------------------------------------------
+  // The game is saved in the browser at the start of every turn. Changing the pairs or the
+  // settings afterwards makes the saved game out of date, so it is not offered any more.
+
+  var PROGRESS_KEY = 'dgp-memory-match-progress';
+
+  function contentSignature() {
+    return JSON.stringify(state.content);
+  }
+
+  /** A copy of the session as it stands between turns: no card half-flipped, timer stopped. */
+  function snapshotSession(session) {
+    var copy = JSON.parse(JSON.stringify(session));
+    var gs = copy.gameState;
+    gs.timerAccumulatedSeconds = MemoryMatch.computeTimerSeconds(session.gameState);
+    gs.timerStartedAtUtc = null;
+    gs.isPaused = false;
+    gs.firstFlippedIndex = null;
+    gs.cards.forEach(function (c) { if (!c.isMatched) c.isRevealed = false; });
+    copy.state.currentPhase = 'Playing';
+    return copy;
+  }
+
+  function saveProgress() {
+    var session = state.session;
+    if (!session || session.status === 'Finished' || session.gameState.cards.length === 0) return;
+    try {
+      localStorage.setItem(PROGRESS_KEY, JSON.stringify({ sig: contentSignature(), session: snapshotSession(session) }));
+    } catch (e) { /* storage unavailable — the game just can't be continued later */ }
+  }
+
+  function clearProgress() {
+    try { localStorage.removeItem(PROGRESS_KEY); } catch (e) {}
+  }
+
+  /** The saved game, if it still matches the current pairs and settings. */
+  function savedProgress() {
+    try {
+      var saved = JSON.parse(localStorage.getItem(PROGRESS_KEY) || 'null');
+      if (!saved || !saved.session || saved.sig !== contentSignature()) return null;
+      return saved.session;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function renderResume() {
+    var saved = savedProgress();
+    if (!saved) return '';
+    var gs = saved.gameState;
+    var players = MemoryMatch.activePlayersInOrder(saved);
+    var current = players[saved.state.currentTurn % players.length];
+    var found = gs.matchedPairIds.length;
+    var text = (found === 1 ? 'נמצא זוג אחד' : 'נמצאו ' + found + ' זוגות') + ' מתוך ' + gs.numberOfPairs +
+      (players.length > 1 && current ? ', ותורו של ' + current.displayName : '') + '.';
+    return '<div class="ui-resume"><p><b>יש משחק שעצרתם באמצע.</b> ' + esc(text) + '</p>' +
+      '<div class="ui-group">' +
+      '<button class="ui-btn ui-btn--gradient" data-action="resume-game">' + icon('playerPlay', 16) + ' ממשיכים מאיפה שעצרנו</button>' +
+      '<button class="ui-btn ui-btn--subtle" data-action="resume-new">משחק חדש</button>' +
+      '</div></div>';
+  }
+
+  function resumeGame() {
+    var saved = savedProgress();
+    if (!saved) { render(); return; }
+    if (saved.gameState.showTimer) saved.gameState.timerStartedAtUtc = new Date().toISOString();
+    state.session = saved;
+    state.ui.hiddenOverride = {};
+    clearMismatchTimer();
+    state.screen = 'play';
+    render();
+    Sound.memoryMatch.dealBoard();
+  }
+
+  function discardSavedGame() {
+    clearProgress();
+    render();
+  }
+
+  function cancelQuit() {
+    state.ui.confirmQuit = false;
+    render();
+  }
+
+  function confirmQuitGame() {
+    state.ui.confirmQuit = false;
+    clearPlayTimers();
+    clearProgress();
+    state.session = null;
+    goHome();
+  }
+
+  function stopForLater() {
+    state.ui.confirmQuit = false;
+    saveProgress();
+    clearPlayTimers();
+    state.session = null;
+    goHome();
   }
 
   /** Static help content — from the game's own instructions, not user data, so no esc() needed
@@ -3700,6 +3827,7 @@ var App = (function () {
     state.ui.hiddenOverride = {};
     clearMismatchTimer();
     state.screen = 'play';
+    saveProgress();
     render();
     Sound.memoryMatch.dealBoard();
   }
@@ -3760,8 +3888,11 @@ var App = (function () {
     }
 
     if (state.session.status === 'Finished') {
+      clearProgress();
       Sound.memoryMatch.gameEnd();
       enterResultsScreen();
+    } else if (gs.firstFlippedIndex === null) {
+      saveProgress();
     }
 
     render();
@@ -3785,26 +3916,10 @@ var App = (function () {
     afterAction(MemoryMatch.processAction(state.session, { type: type, playerId: selector ? selector.id : null, payload: { cardIndex: index } }));
   }
 
-  function requestQuitGame() {
-    state.ui.confirmQuit = true;
-    render();
-  }
-
-  function cancelQuit() {
-    state.ui.confirmQuit = false;
-    render();
-  }
-
-  function confirmQuitGame() {
-    clearPlayTimers();
-    state.ui.confirmQuit = false;
-    state.session = null;
-    goHome();
-  }
-
   function quitToHome() {
-    if (state.session && state.session.gameState.cards.length > 0) {
-      requestQuitGame();
+    if (state.session && state.session.gameState.cards.length > 0 && state.session.status !== 'Finished') {
+      state.ui.confirmQuit = true;
+      render();
       return;
     }
     clearPlayTimers();
@@ -3874,8 +3989,11 @@ var App = (function () {
     'toggle-pause': togglePause,
     'flip-card': function (el) { flipCard(Number(el.getAttribute('data-index'))); },
     'quit-to-home': quitToHome,
+    'stop-later': stopForLater,
     'cancel-quit': cancelQuit,
     'confirm-quit': confirmQuitGame,
+    'resume-game': resumeGame,
+    'resume-new': discardSavedGame,
   };
 
   function onClick(event) {
@@ -3947,6 +4065,9 @@ var App = (function () {
     root.addEventListener('change', onChange);
     root.addEventListener('input', onInput);
     root.addEventListener('keydown', onKeydown);
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && state.screen === 'play' && state.session && state.session.gameState.isPaused) togglePause();
+    });
 
     var resizeTimer = null;
     window.addEventListener('resize', function () {
