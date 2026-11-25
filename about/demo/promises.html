@@ -165,6 +165,9 @@ textarea.input { resize: none; line-height: 1.4; min-height: 124px; }
 .chip > span { padding: 0 11px; }
 .chip button { min-width: 34px; height: 34px; padding: 0 7px; border: 0; border-radius: 999px; background: rgba(255, 255, 255, .14); font-size: .92rem; font-weight: 700; }
 .chip button.x { font-size: 1.22rem; line-height: 1; }
+.resume { display: grid; gap: 10px; justify-items: center; padding: 14px 16px; border-radius: 18px; background: rgba(255, 191, 105, .12); border: 1.5px solid rgba(255, 191, 105, .5); text-align: center; }
+.resume p { margin: 0; font-size: 1.08rem; font-weight: 700; }
+.resume-new { border: 0; background: none; color: var(--lilac); font-weight: 700; text-decoration: underline; padding: 4px 8px; }
 .msg { margin: 0; min-height: 1.5em; font-size: 1.02rem; font-weight: 500; color: var(--danger); }
 .msg.note { color: var(--lilac); }
 .cta {
@@ -673,6 +676,11 @@ window.dgpDemo = (function () {
       </div>
     </form>
     <div class="chips" id="chips"></div>
+    <div class="resume" id="resume" hidden>
+      <p id="resume-text"></p>
+      <button type="button" class="cta" id="resume-go">ממשיכים מאיפה שעצרנו</button>
+      <button type="button" class="resume-new" id="resume-new">משחק חדש עם אותם משתתפים</button>
+    </div>
     <p class="msg note" id="setup-msg">צריך לפחות 2 משתתפים.</p>
     <button type="button" class="cta" id="start" disabled>מתחילים לשחק</button>
   </section>
@@ -746,7 +754,7 @@ window.dgpDemo = (function () {
   }
   var MAX_NAMES = 16;
 
-  /* Game state lives in memory only. */
+  /* Game state lives in memory, and is also saved in the browser (see "Continuing another time"). */
   var names = [], promises = [], remaining = [], notDrawn = [], assign = [], written = {}, busy = false, gender = 'm';
   var fx = { head: null, speed: 0, pos: 0 };
 
@@ -850,6 +858,8 @@ window.dgpDemo = (function () {
       box.appendChild(chip);
     });
     renderPlates();
+    /* while a stopped game is on offer, editing names must not overwrite it */
+    if ($('#resume').hidden) saveGame('setup');
     $('#start').disabled = names.length < 2;
     setupMsg(names.length < 2 ? 'צריך לפחות 2 משתתפים.' : '', false);
     hub(names.length ? 'במעגל' : 'המעגל ריק', names.length ? names.length + ' משתתפים' : 'מוסיפים שמות', true);
@@ -888,6 +898,8 @@ window.dgpDemo = (function () {
   $('#start').addEventListener('click', function () {
     if (names.length < 2) return;
     audio(); tick(880);
+    hideResume();
+    saveGame('write');
     screen('write'); renderTurn(); $('#who').focus();
   });
   var sealing = false;
@@ -905,6 +917,7 @@ window.dgpDemo = (function () {
     sealing = true;
     promises.push({ by: p.name, g: p.g, text: text });
     written[p.name] = true;
+    saveGame('write');
     who.value = ''; box.value = '';
     $('#sealed').hidden = false;
     audio(); thump();
@@ -933,6 +946,7 @@ window.dgpDemo = (function () {
     Array.prototype.forEach.call(platesEl.children, function (el) { el.classList.remove('done'); });
     hub('', '');
     $('#draw').hidden = false;
+    saveGame('draw');
   }
   $('#draw').addEventListener('click', function () {
     if (busy) return;
@@ -1079,6 +1093,7 @@ window.dgpDemo = (function () {
     var p = remaining.splice(k, 1)[0];
     await wait(520);
     await reveal(card, p, recipient);
+    saveGame('draw');
     busy = false;
   }
 
@@ -1149,6 +1164,7 @@ function wowFanfare(ac) {
 
   /* ---------- Step 8: finish ---------- */
   function finish() {
+    saveNamesOnly();
     fx.head = null;
     hub('', '');
     screen('end');
@@ -1170,6 +1186,61 @@ function wowFanfare(ac) {
     renderSetup();
     $('#name-input').focus();
   });
+
+  /* ---------- Continuing another time ----------
+   * Saved after every step: the names, the promises signed so far, and during the draw who is still
+   * waiting. Closing the page and opening it again offers to go on from the same place. */
+  var SAVE_KEY = 'dgp-promises-progress-v1';
+  function saveGame(phase) {
+    var idx = function (p) { return promises.indexOf(p); };
+    var data = { phase: phase, names: names, promises: promises,
+      remaining: remaining.map(idx), notDrawn: notDrawn, assign: assign.map(idx) };
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (e) {}
+  }
+  function saveNamesOnly() {
+    try { localStorage.setItem(SAVE_KEY, JSON.stringify({ phase: 'setup', names: names })); } catch (e) {}
+  }
+  function loadSaved() {
+    try {
+      var d = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null');
+      if (!d || !Array.isArray(d.names)) return null;
+      d.names = d.names.filter(function (p) { return p && typeof p.name === 'string'; }).slice(0, MAX_NAMES);
+      d.promises = Array.isArray(d.promises) ? d.promises : [];
+      /* a draw with nothing left to draw is a finished game */
+      if (d.phase === 'draw' && !(Array.isArray(d.remaining) && d.remaining.length)) d.phase = 'setup';
+      return d;
+    } catch (e) { return null; }
+  }
+  function hideResume() { $('#resume').hidden = true; }
+  function offerResume(d) {
+    var total = d.names.length;
+    $('#resume-text').textContent = d.phase === 'write'
+      ? 'יש משחק שעצרתם באמצע: נחתמו ' + d.promises.length + ' הבטחות מתוך ' + total + '.'
+      : 'יש משחק שעצרתם באמצע: חולקו ' + (total - d.remaining.length) + ' הבטחות מתוך ' + total + '.';
+    $('#resume').hidden = false;
+  }
+  $('#resume-go').addEventListener('click', function () {
+    var d = loadSaved(); if (!d || d.phase === 'setup') return hideResume();
+    audio(); tick(880); hideResume();
+    names = d.names; promises = d.promises; written = {};
+    promises.forEach(function (p) { written[p.by] = true; });
+    if (d.phase === 'write') { screen('write'); renderTurn(); $('#who').focus(); return; }
+    remaining = d.remaining.map(function (i) { return promises[i]; });
+    assign = d.assign.map(function (i) { return promises[i]; });
+    notDrawn = d.notDrawn;
+    screen('names');
+    renderPlates();
+    Array.prototype.forEach.call(platesEl.children, function (el, i) { el.classList.toggle('done', notDrawn.indexOf(i) < 0); });
+    hub('', '');
+    $('#draw').hidden = false;
+  });
+  $('#resume-new').addEventListener('click', function () { hideResume(); saveNamesOnly(); renderSetup(); });
+  (function restore() {
+    var d = loadSaved(); if (!d) return;
+    names = d.names;
+    if (d.phase === 'write' || d.phase === 'draw') offerResume(d);
+    renderSetup();
+  })();
 
   /* ---------- Canvases: star dust, ring lights, confetti ---------- */
   var dust = $('#dust'), dctx = dust.getContext('2d'), stars = [];
