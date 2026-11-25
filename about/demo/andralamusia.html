@@ -1145,7 +1145,31 @@ function updateSummaryUI() {
   }
 }
 
+/* ---------- Saved in the browser, so the names are still there next time ---------- */
+
+const SAVE_KEY = 'dgp-andralamusia-names-v1';
+
+function saveNames() {
+  const members = Array.from(el.memberFields.querySelectorAll('.member-input')).map(i => i.value);
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify({ parents: el.parentsInput.value, members }));
+  } catch (e) { /* storage unavailable: the names just are not kept */ }
+}
+
+/** Fills the form with the names saved last time; returns false when there is nothing saved. */
+function restoreNames() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { return false; }
+  if (!data || !Array.isArray(data.members)) return false;
+  el.parentsInput.value = data.parents || '';
+  const members = data.members.filter(v => typeof v === 'string').slice(0, MAX_MEMBER_FIELDS);
+  members.forEach(v => addMemberField(v));
+  while (el.memberFields.children.length < 3) addMemberField();
+  return true;
+}
+
 function onFieldsChanged() {
+  saveNames();
   updateSummaryUI();
   if (!el.previewSection.hidden) {
     el.previewSection.hidden = true;
@@ -1363,9 +1387,11 @@ document.addEventListener('keydown', (event) => {
 el.parentsInput.addEventListener('input', onFieldsChanged);
 el.btnAddMember.addEventListener('click', () => addMemberField());
 
-addMemberField();
-addMemberField();
-addMemberField();
+if (!restoreNames()) {
+  addMemberField();
+  addMemberField();
+  addMemberField();
+}
 updateSummaryUI();
   </script>
 </body>

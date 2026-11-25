@@ -1204,6 +1204,7 @@ function buildGameFromForm() {
   state.lastCards = cards;
   renderCards(cards);
   updatePageTitle();
+  saveForm();
 
   clearMessage();
   let message = `יוצרו ${cards.length} כרטיסים.`;
@@ -1229,6 +1230,7 @@ function reshuffleGame() {
   );
   state.lastCards = cards;
   renderCards(cards);
+  saveForm();
 
   let message = `יוצרו ${cards.length} כרטיסים.`;
   if (state.personalPerCard > 0 && personalShortage) {
@@ -1262,6 +1264,7 @@ function handleCardLogoUpload() {
     state.cardLogoDataUrl = reader.result;
     showLogoPreview(state.cardLogoDataUrl);
     rerenderCurrentCards();
+    saveForm();
   };
   reader.readAsDataURL(file);
 }
@@ -1271,6 +1274,7 @@ function removeCardLogo() {
   elements.cardLogoInput.value = '';
   hideLogoPreview();
   rerenderCurrentCards();
+  saveForm();
 }
 
 // --- מצב תיבת "רק מילים אישיות" ---
@@ -1282,6 +1286,61 @@ function updateOnlyPersonalWordsUi() {
 }
 
 // --- ניקוי כל הטופס והכרטיסים ---
+
+// --- שמירה אוטומטית בדפדפן ---
+// כל מה שממלאים (וגם הכרטיסים שכבר נוצרו) נשמר, כדי שאפשר לסגור באמצע ההכנה ולהמשיך אחר כך.
+const SAVE_KEY = 'dgp-alias-form-v1';
+
+function saveForm() {
+  const data = {
+    gameName: elements.gameNameInput.value,
+    wordsPerCard: elements.wordsPerCardInput.value,
+    personalPerCard: elements.personalWordsPerCardInput.value,
+    onlyPersonal: elements.onlyPersonalWordsInput.checked,
+    words: elements.wordsListTextarea.value,
+    logo: state.cardLogoDataUrl,
+    game: state.lastCards.length ? {
+      userWords: state.userWords, bankWords: state.bankWords, wordsPerCard: state.wordsPerCard,
+      personalPerCard: state.personalPerCard, cards: state.lastCards,
+    } : null,
+  };
+  try {
+    localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+  } catch (e) {
+    // A very large logo can fill the browser's storage: keep everything else.
+    try { data.logo = null; localStorage.setItem(SAVE_KEY, JSON.stringify(data)); } catch (e2) { /* storage unavailable */ }
+  }
+}
+
+function restoreForm() {
+  let data = null;
+  try { data = JSON.parse(localStorage.getItem(SAVE_KEY) || 'null'); } catch (e) { return; }
+  if (!data || typeof data !== 'object') return;
+  elements.gameNameInput.value = data.gameName || '';
+  elements.wordsPerCardInput.value = data.wordsPerCard || '';
+  elements.personalWordsPerCardInput.value = data.personalPerCard || '';
+  elements.onlyPersonalWordsInput.checked = !!data.onlyPersonal;
+  elements.wordsListTextarea.value = data.words || '';
+  updateOnlyPersonalWordsUi();
+  updatePageTitle();
+  if (data.logo) {
+    state.cardLogoDataUrl = data.logo;
+    showLogoPreview(data.logo);
+  }
+  const game = data.game;
+  if (game && Array.isArray(game.cards) && game.cards.length) {
+    state.userWords = game.userWords || [];
+    state.bankWords = game.bankWords || [];
+    state.wordsPerCard = game.wordsPerCard;
+    state.personalPerCard = game.personalPerCard;
+    state.lastCards = game.cards;
+    renderCards(game.cards);
+  }
+  const words = parseWordList(elements.wordsListTextarea.value).length;
+  if (words || state.lastCards.length) {
+    showMessage('מה שהכנתם בפעם הקודמת נטען' + (words ? ' (' + words + ' מילים אישיות)' : '') + (state.lastCards.length ? ', כולל ' + state.lastCards.length + ' הכרטיסים שיצרתם.' : '.'));
+  }
+}
 
 function clearAll() {
   elements.gameNameInput.value = '';
@@ -1303,6 +1362,7 @@ function clearAll() {
   clearCards();
   clearMessage();
   document.title = 'משפוחה';
+  saveForm();
 }
 
 // --- הדפסה ---
@@ -1324,6 +1384,10 @@ function closeInstructions() {
 // --- חיבור מאזינים ---
 
 elements.createBtn.addEventListener('click', buildGameFromForm);
+[elements.gameNameInput, elements.wordsPerCardInput, elements.personalWordsPerCardInput, elements.wordsListTextarea]
+  .forEach((input) => input.addEventListener('input', saveForm));
+elements.onlyPersonalWordsInput.addEventListener('change', saveForm);
+restoreForm();
 elements.reshuffleBtn.addEventListener('click', reshuffleGame);
 elements.clearBtn.addEventListener('click', clearAll);
 elements.printBtn.addEventListener('click', printGame);
