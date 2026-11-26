@@ -739,10 +739,8 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
         </select>
       </div>
       <div class="lp3-pricing-select-wrap" id="second-wrap" hidden>
-        <label for="game-select-second" class="lp3-pricing-label">רוצים להוסיף עוד משחק לאותו תשלום? (לא חובה)</label>
-        <select id="game-select-second" class="lp3-pricing-select">
-          <option value="" selected>בלי משחק נוסף</option>
-        </select>
+        <p class="lp3-pricing-label" id="extras-label">רוצים להוסיף עוד משחקים לאותו תשלום? (לא חובה)</p>
+        <div id="extras" style="display:grid;gap:10px"></div>
       </div>
       <p id="game-select-price" class="lp3-pricing-price" hidden></p>
       <div class="lp3-pricing-email-wrap">
@@ -823,7 +821,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   var PAY_BASE = 'https://www.matara.pro/nedarimplus/online/';
   var select = document.getElementById('game-select-3');
   var priceEl = document.getElementById('game-select-price');
-  var second = document.getElementById('game-select-second');
+  var extras = document.getElementById('extras');
   var secondWrap = document.getElementById('second-wrap');
   var payBtn = document.getElementById('pay-button');
   var emailEl = document.getElementById('buyer-email');
@@ -871,30 +869,54 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
     return !!(opt && opt.hasAttribute('data-free'));
   }
 
-  /* Optional second game: same paid games as the main list, paid together in one
-     payment. The server reads Groupe "<game> + <game>" and sends both. */
-  Array.prototype.forEach.call(select.options, function (o) {
-    if (o.value !== '' && o.getAttribute('data-price') && !o.hasAttribute('data-free')) second.appendChild(o.cloneNode(true));
+  /* Optional extra games: the same paid games as the main list, paid together in one
+     payment, up to every paid game. A new empty list appears after each chosen game.
+     The server reads Groupe "<game> + <game> + ..." and sends them all. */
+  var PAID = Array.prototype.filter.call(select.options, function (o) {
+    return o.value !== '' && o.getAttribute('data-price') && !o.hasAttribute('data-free');
   });
+  function extraSelects() { return Array.prototype.slice.call(extras.querySelectorAll('select')); }
+  function addExtra() {
+    var s = document.createElement('select');
+    s.className = 'lp3-pricing-select';
+    s.setAttribute('aria-label', 'משחק נוסף');
+    var none = document.createElement('option');
+    none.value = ''; none.textContent = extraSelects().length ? 'בלי עוד משחק' : 'בלי משחק נוסף';
+    s.appendChild(none);
+    PAID.forEach(function (o) { s.appendChild(o.cloneNode(true)); });
+    s.value = '';
+    s.addEventListener('change', function () { updatePrice(); });
+    extras.appendChild(s);
+  }
   function syncSecond() {
     var opt = selectedOption();
     var paid = !!(opt && opt.value !== '' && !isFree());
     secondWrap.hidden = !paid;
-    if (!paid) second.value = '';
-    Array.prototype.forEach.call(second.options, function (o) { o.disabled = o.value !== '' && o.value === select.value; });
-    if (second.value === select.value) second.value = '';
+    if (!paid) { extras.innerHTML = ''; return; }
+    var chosen = [select.value];
+    extraSelects().forEach(function (s) {
+      if (s.value && chosen.indexOf(s.value) < 0) chosen.push(s.value);
+      else s.remove(); /* empty, or the same game twice */
+    });
+    if (chosen.length < PAID.length) addExtra();
+    extraSelects().forEach(function (s) {
+      Array.prototype.forEach.call(s.options, function (o) { o.disabled = o.value !== '' && o.value !== s.value && chosen.indexOf(o.value) >= 0; });
+    });
+  }
+  function priceOf(name) {
+    var o = PAID.filter(function (p) { return p.value === name; })[0];
+    return Number(o.getAttribute('data-price'));
   }
 
   /* What is being bought right now: { game, price, count } or null (nothing paid chosen). */
   function purchase() {
     var opt = selectedOption();
     if (!opt || opt.value === '' || isFree()) return null;
-    var extra = second.options[second.selectedIndex];
-    if (!extra || extra.value === '') return { game: opt.value, price: Number(opt.getAttribute('data-price')), count: 1 };
+    var names = [opt.value].concat(extraSelects().map(function (s) { return s.value; }).filter(Boolean));
     return {
-      game: opt.value + ' + ' + extra.value,
-      price: Number(opt.getAttribute('data-price')) + Number(extra.getAttribute('data-price')),
-      count: 2
+      game: names.join(' + '),
+      price: names.reduce(function (sum, n) { return sum + priceOf(n); }, 0),
+      count: names.length
     };
   }
 
@@ -965,7 +987,7 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
       priceEl.hidden = false;
       if (credit.toPay === 0) payLabel.textContent = 'שלחו לי את המשחק';
     } else if (price) {
-      showHolidayPrice(priceEl, price, buy.count === 2 ? 'מחיר חנוכה לשניהם: ' : 'מחיר חנוכה: ', buy.count);
+      showHolidayPrice(priceEl, price, buy.count === 1 ? 'מחיר חנוכה: ' : buy.count === 2 ? 'מחיר חנוכה לשניהם: ' : 'מחיר חנוכה ל־' + buy.count + ' המשחקים: ', buy.count);
       priceEl.hidden = false;
     } else {
       priceEl.hidden = true;
@@ -998,7 +1020,6 @@ body { font-family: 'Rubik', -apple-system, BlinkMacSystemFont, 'Segoe UI', Aria
   });
 
   select.addEventListener('change', function () { updatePrice(); });
-  second.addEventListener('change', function () { updatePrice(); });
   updatePrice();
 
   document.querySelectorAll('.lp3-game__pick').forEach(function (btn) {
