@@ -107,6 +107,15 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; }
 .help p, .help li { font-size: 18px; line-height: 1.55; margin: 0 0 6px; }
 .help ul { margin: 0; padding-inline-start: 22px; }
 #dare .row { justify-content: center; }
+.open { display: flex; gap: 14px; }
+.open-in { flex: 1; min-width: 0; padding: .55em .8em; border: 0; border-radius: 20px; font: inherit; font-weight: 700; font-size: clamp(22px, 2.4vw, 38px); color: #2a1446; background: linear-gradient(180deg, #fffaf2, #f1e3d3); box-shadow: 0 6px 0 rgba(0, 0, 0, .4); outline: none; }
+.open-in:focus { box-shadow: 0 6px 0 rgba(0, 0, 0, .4), 0 0 0 4px var(--tc); }
+.open-in.ok { color: #0c3a1f; background: var(--good); animation: pop .5s; }
+.open-in.no { color: #fff; background: var(--bad); animation: shake .45s; }
+.open-go { flex: none; padding: 0 1.1em; border-radius: 20px; font-weight: 800; font-size: clamp(20px, 2vw, 32px); color: #1c0c33; background: var(--tc); box-shadow: 0 6px 0 rgba(0, 0, 0, .4); }
+.open-go:disabled { opacity: .45; }
+.open-res { margin-top: 16px; font-weight: 800; font-size: clamp(20px, 2.2vw, 34px); }
+@keyframes shake { 25%, 75% { transform: translateX(-8px); } 50% { transform: translateX(8px); } }
 .empty { padding: 22px; text-align: center; font-size: 19px; line-height: 1.7; color: var(--lilac); }
 
 /* Game */
@@ -313,7 +322,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     </div>
     <div class="steps">
       <div class="glass"><b>1</b>מסובבים סביבון – והוא קובע את האתגר</div>
-      <div class="glass"><b>2</b>טריוויה, שאלות על המשפחה ומשימות</div>
+      <div class="glass"><b>2</b>שאלות מכל הנושאים, שאלות על המשפחה ומשימות</div>
       <div class="glass"><b>3</b>הצלחתם? נר נדלק. קלפי נס הופכים הכול</div>
     </div>
     <div class="glass resume" id="resume" hidden>
@@ -365,7 +374,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       <p class="hint">שאלות הבסיס והמשימות כבר בפנים. כאן מוסיפים שאלות ומשימות על המשפחה שלכם – הן יופיעו כשהסביבון נופל על ה׳.</p>
     </div>
     <div class="glass panel">
-      <h3>שאלות הטריוויה (ג׳)</h3>
+      <h3>שאלות (ג׳)</h3>
       <div class="row">
         <span id="t-count" style="font-size:20px;font-weight:700"></span>
         <button type="button" class="btn ghost small" id="go-trivia">צפייה ועריכה</button>
@@ -405,7 +414,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   </section>
 
   <section class="screen" id="s-trivia">
-    <h2 class="title">שאלות הטריוויה</h2>
+    <h2 class="title">השאלות</h2>
     <p class="hint" style="text-align:center;max-width:900px">כל השאלות שיוצאות כשהסביבון נופל על ג׳. שאלה שמכבים לא תצא במשחק, ואפשר להדליק אותה שוב.</p>
     <div class="row" style="justify-content:center">
       <button type="button" class="btn ghost small" id="reset-trivia">להדליק את כל השאלות</button>
@@ -459,6 +468,8 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       <div class="q" id="ask-q"></div>
       <div class="bar" id="ask-bar"><i></i></div>
       <div class="opts" id="opts"></div>
+      <form class="open" id="open" hidden><input class="open-in" id="open-in" autocomplete="off" maxlength="80" placeholder="כתבו כאן את התשובה" aria-label="התשובה שלכם"><button class="open-go" type="submit">בודקים</button></form>
+      <div class="open-res" id="open-res" hidden></div>
     </div>
   </div>
 
@@ -521,7 +532,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       <div id="ed-fam">
         <label>תשובות – לחצו על האות של התשובה הנכונה</label>
         <div id="ed-answers"></div>
-        <p class="hint">תשובה אחת בלבד = שאלה פתוחה שהמנחה שופט. בלי תשובות = משימה משפחתית.</p>
+        <p class="hint">תשובה אחת בלבד = שאלה פתוחה: כותבים את התשובה, והמשחק בודק (גם כתיב קרוב). בלי תשובות = משימה משפחתית שהמנחה שופט.</p>
       </div>
       <div id="ed-task">
         <label for="ed-s">זמן למשימה, בשניות</label>
@@ -573,17 +584,18 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       <p>בכל תור לוחצים "מסובבים!", והאות שהסביבון נופל עליה קובעת מה עושים:</p>
       <ul>
         <li><b>נ – נס!</b> מקבלים קלף נס (ראו למטה).</li>
-        <li><b>ג – גאונים:</b> שאלת טריוויה. יש שאלות על חנוכה ושאלות מכל הנושאים: ידע כללי, יהדות ותנ"ך, הלכה, חשבון וסדרות.</li>
-        <li><b>ה – המשפחה שלנו:</b> שאלה שכתבתם על המשפחה. אם לא כתבתם, יוצאת במקומה שאלת טריוויה.</li>
+        <li><b>ג – גאונים:</b> שאלה – אמריקאית או פתוחה. יש שאלות על חנוכה ושאלות מכל הנושאים: ידע כללי, יהדות ותנ"ך, הלכה, חשבון וסדרות.</li>
+        <li><b>ה – המשפחה שלנו:</b> שאלה שכתבתם על המשפחה. אם לא כתבתם, יוצאת במקומה שאלה רגילה.</li>
         <li><b>פ – פעולה!</b> משימה בזמן קצוב, והמנחה מחליט אם הקבוצה הצליחה.</li>
         <li>תשובה נכונה או משימה שהצליחה מדליקות נר. אחרת התור עובר הלאה.</li>
-        <li>הסביבון לא לגמרי מקרי: בכל שישה סיבובים יוצאים שני קלפי נס, שתי משימות, שאלת טריוויה ושאלה משפחתית.</li>
+        <li>הסביבון לא לגמרי מקרי: בכל שישה סיבובים יוצאים שני קלפי נס, שתי משימות, שאלה ושאלה משפחתית.</li>
       </ul>
       <h4>השאלות</h4>
       <ul>
         <li><b>שאלה אמריקאית:</b> לוחצים על התשובה (או על המקשים 1 עד 4).</li>
-        <li><b>שאלה פתוחה:</b> עונים בקול. המנחה לוחץ "הצגת התשובה" ומחליט: "הצליחו" או "לא הפעם". ליד התשובה כתוב גם מה עוד מתקבל.</li>
-        <li>אם בחרתם זמן לתשובה, יש פס זמן. בשאלה אמריקאית, כשהזמן נגמר זה כמו טעות.</li>
+        <li><b>שאלה פתוחה:</b> כותבים את התשובה ולוחצים "בודקים". המשחק סלחני: לא משנה רווחים, גרשיים, מקפים או ה' ו־ו' בהתחלה, ובמילה של 4 אותיות ומעלה מותרת טעות של אות אחת.</li>
+        <li>אם בחרתם זמן לתשובה, יש פס זמן. כשהזמן נגמר זה כמו טעות.</li>
+        <li>במשימות (פ׳ ואתגר כפול) המנחה מחליט: "הצליחו" או "לא הפעם".</li>
       </ul>
       <h4>קלפי נס</h4>
       <ul>
@@ -612,7 +624,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
         <li><b>רמת השאלות</b> – רגיל (קשות ובינוניות, ועל כל 10 אחת קלה), רק קשה, או רק קל. שאלות חנוכה יוצאות בכל רמה.</li>
         <li><b>מי משחק</b> – כולם (עם מעט שאלות לגברים), רק גברים (יותר שאלות לגברים), רק נשים ובחורות, או בלי גברים (בשתי האחרונות אין שאלות לגברים).</li>
         <li><b>השאלות של המשפחה שלנו</b> – כותבים שאלות על המשפחה: עם כמה תשובות (אמריקאית), עם תשובה אחת (שאלה פתוחה), או בלי תשובות (משימה משפחתית). אפשר גם להדביק רשימה שלמה.</li>
-        <li><b>שאלות הטריוויה</b> – "צפייה ועריכה" מראה את כל השאלות, ואפשר לכבות שאלות שלא רוצים.</li>
+        <li><b>שאלות</b> – "צפייה ועריכה" מראה את כל השאלות, ואפשר לכבות שאלות שלא רוצים.</li>
         <li><b>משימות פעולה</b> – המשימות של האות פ. אפשר לשנות, להוסיף ולקבוע לכל משימה כמה זמן יש. "שירו יחד שיר חנוכה" יוצאת רק במשחק של רק גברים או רק נשים ובחורות.</li>
       </ul>
       <h4>הפסקה והמשך</h4>
@@ -645,6 +657,31 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     });
   };
   function esc(v) { return String(v).replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; }); }
+  /* Open answers: ignore spaces, quotes, dashes, niqqud, final letters and a leading ה/ו; allow one wrong letter in words of 4+ letters. */
+  var FINALS = { 'ך': 'כ', 'ם': 'מ', 'ן': 'נ', 'ף': 'פ', 'ץ': 'צ' };
+  function norm(v) {
+    return String(v).toLowerCase().replace(/[\u0591-\u05C7]/g, '').replace(/[ךםןףץ]/g, function (c) { return FINALS[c]; })
+      .replace(/[\s'"׳״`.,\-־–—?!:;()]/g, '').replace(/^ו/, '').replace(/^ה/, '');
+  }
+  function oneOff(a, b) {
+    if (Math.abs(a.length - b.length) > 1) return false;
+    var i = 0, j = 0, miss = 0;
+    while (i < a.length && j < b.length) {
+      if (a[i] === b[j]) { i++; j++; continue; }
+      if (++miss > 1) return false;
+      if (a.length > b.length) i++; else if (b.length > a.length) j++; else { i++; j++; }
+    }
+    return miss + (a.length - i) + (b.length - j) <= 1;
+  }
+  function accepts(q, typed) {
+    var t = norm(typed);
+    if (!t) return false;
+    return [q.a[q.c]].concat(q.o || []).some(function (ans) {
+      var a = norm(ans);
+      if (a === t) return true;
+      return a.length >= 4 && !/\d/.test(a + t) && oneOff(a, t);
+    });
+  }
   function shuffle(a) { for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
 
   /* ---------- Built-in content ----------
@@ -1235,7 +1272,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       women: ['רק נשים ובחורות', 'בלי השאלות לגברים, ועם משימות חובה לנשים.'], nomen: ['בלי גברים', 'בלי השאלות לגברים.'] };
     chips($('l-chips'), ['mix', 'hard', 'easy'], G.lvl, function (v) { return LVL[v][0]; }, function (v) { G.lvl = v; });
     chips($('w-chips'), ['all', 'men', 'women', 'nomen'], G.who, function (v) { return WHO[v][0]; }, function (v) { G.who = v; });
-    $('l-hint').textContent = LVL[G.lvl][1] + ' שאלות החנוכה יוצאות בכל רמה. ' + inPlay().length + ' שאלות טריוויה במשחק.';
+    $('l-hint').textContent = LVL[G.lvl][1] + ' שאלות החנוכה יוצאות בכל רמה. ' + inPlay().length + ' שאלות במשחק.';
     $('w-hint').textContent = WHO[G.who][1];
     $('t-count').textContent = inPlay().length + ' שאלות במשחק' + (G.qOff.length ? ' · ' + G.qOff.length + ' כבויות' : '');
     chips($('d-chips'), [true, false], G.dareOn, function (v) { return v ? 'עם משימות חובה' : 'בלי משימות חובה'; }, function (v) { G.dareOn = v; });
@@ -1441,7 +1478,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   // The dreidel's four sides, in the order they sit around it.
   var FACES = [
     { id: 'luck', L: 'נ', name: 'נס!', desc: 'קלף נס' },
-    { id: 'trivia', L: 'ג', name: 'גאונים', desc: 'שאלת טריוויה' },
+    { id: 'trivia', L: 'ג', name: 'גאונים', desc: 'שאלה' },
     { id: 'fam', L: 'ה', name: 'המשפחה שלנו', desc: 'שאלה משפחתית' },
     { id: 'task', L: 'פ', name: 'פעולה!', desc: 'משימה לקבוצה' }
   ];
@@ -1701,7 +1738,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       return;
     }
     var q = nextItem(face.id), who = teamName(t) + ' · ' + face.desc;
-    var ok = await (q.a.length > 1 ? ask(q, who, t) : judge(q, who, t)); if (my !== run) return;
+    var ok = await (q.a.length ? ask(q, who, t) : judge(q, who, t)); if (my !== run) return;
     if (!ok) { banner('לא הפעם! התור עובר הלאה', t); await wait(1300); if (my === run) next(); return; }
     banner(S.h[t] === CANDLES - 1 ? 'הנר השמיני!' : 'נר חדש נדלק!', t);
     await light(t, 1); if (my !== run) return;
@@ -1728,7 +1765,10 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   /** Shows a multiple-choice question; resolves true when the correct option is chosen, false on a wrong one or timeout. */
   function ask(q, who, team) {
     return new Promise(function (done) {
-      var order = shuffle(q.a.map(function (_, k) { return k; })), box = $('opts');
+      var open = q.a.length === 1, inp = $('open-in'), res = $('open-res');
+      var order = open ? [] : shuffle(q.a.map(function (_, k) { return k; })), box = $('opts');
+      box.hidden = open; $('open').hidden = !open; res.hidden = true;
+      inp.value = ''; inp.className = 'open-in'; inp.disabled = false; $('open').querySelector('button').disabled = false;
       $('ask').style.setProperty('--tc', COL[team]);
       $('ask-who').textContent = who; $('ask-q').textContent = q.q;
       box.innerHTML = '';
@@ -1741,21 +1781,33 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       });
       S.pick = async function (pos) {
         S.pick = null; clearInterval(timer);
-        var my = run, ok = pos >= 0 && order[pos] === q.c;
+        var my = run, ok = open ? accepts(q, inp.value) : pos >= 0 && order[pos] === q.c;
+        if (open) {
+          inp.disabled = true; $('open').querySelector('button').disabled = true;
+          inp.classList.add(ok ? 'ok' : 'no');
+          res.textContent = !ok && !inp.value.trim() ? 'נגמר הזמן. התשובה הנכונה: ' + q.a[q.c] : (ok ? '✓ נכון! ' : 'התשובה הנכונה: ') + q.a[q.c];
+          res.hidden = false;
+        }
         Array.prototype.forEach.call(box.children, function (b, p) {
           b.disabled = true;
           if (order[p] === q.c) b.classList.add('ok'); else if (p === pos) b.classList.add('no');
         });
         if (ok) sfx.good(); else sfx.bad();
-        await wait(1700);
+        await wait(open && !ok ? 2600 : 1700);
         if (my !== run) return;
-        $('ask').hidden = true; done(ok);
+        $('ask').hidden = true; box.hidden = false; $('open').hidden = true; res.hidden = true; done(ok);
       };
       $('ask').hidden = false;
+      if (open) setTimeout(function () { inp.focus(); }, 60);
       countdown($('ask-bar'), G.secs, function () { if (S.pick) S.pick(-1); });
     });
   }
+  $('open').addEventListener('submit', function (e) {
+    e.preventDefault();
+    if (S.pick && !paused && $('open-in').value.trim()) S.pick(0);
+  });
   document.addEventListener('keydown', function (e) {
+    if (e.target && e.target.id === 'open-in') return;
     var k = '1234'.indexOf(e.key);
     if (k >= 0 && !paused && S.pick && !$('ask').hidden && k < $('opts').children.length) S.pick(k);
   });
