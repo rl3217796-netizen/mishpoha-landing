@@ -185,6 +185,17 @@ h1, h2, h3 { font-family: var(--display); font-weight: 400; margin: 0; }
 .open-go { flex: none; padding: 0 1.1em; border-radius: 20px; font-weight: 800; font-size: clamp(20px, 2vw, 32px); color: #1c0c33; background: var(--tc); box-shadow: 0 6px 0 rgba(0, 0, 0, .4); }
 .open-go:disabled { opacity: .45; }
 .open-res { margin-top: 16px; font-weight: 800; font-size: clamp(20px, 2.2vw, 34px); }
+.q-item.off { opacity: .45; }
+.q-item.off b { text-decoration: line-through; }
+.dare-group { width: 100%; max-width: 900px; margin: 14px 0 2px; font-size: 22px; color: var(--cream); }
+.dare-group small { font-size: 15px; color: var(--lilac); font-weight: 600; margin-inline-start: 8px; }
+#help { z-index: 70; place-items: start center; }
+.help { max-width: 820px; text-align: right; }
+.help h3 { font-size: 30px; text-align: center; margin-bottom: 6px; }
+.help h4 { font-size: 21px; color: var(--amber); margin: 18px 0 6px; }
+.help p, .help li { font-size: 18px; line-height: 1.55; margin: 0 0 6px; }
+.help ul { margin: 0; padding-inline-start: 22px; }
+#dare .row { justify-content: center; }
 .q-item .open-tag { margin-inline-start: 8px; padding: 0 8px; border-radius: 999px; font-size: 13px; color: #1c0c33; background: var(--amber); }
 /* Editor */
 .ed { max-width: 720px; text-align: right; }
@@ -305,6 +316,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
 
 <div id="app">
   <div class="corner">
+    <button type="button" id="help-btn" title="איך משחקים" aria-label="איך משחקים">?</button>
     <button type="button" id="mute" aria-label="צליל">🔊</button>
     <button type="button" id="pause" title="השהיה" aria-label="השהיית המשחק" hidden>⏸</button>
     <button type="button" id="quit" title="עוצרים וממשיכים אחר כך" hidden>יציאה</button>
@@ -324,7 +336,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     <div class="steps">
       <div class="glass"><b>1</b>תשובה נכונה = קומה חדשה</div>
       <div class="glass"><b>2</b>בנייה נועזת: 2 קומות, אבל טעות מפילה</div>
-      <div class="glass"><b>3</b>קלפי הפתעה: גניבה, הקפאה ורעידת אדמה</div>
+      <div class="glass"><b>3</b>קלפי הפתעה: גניבה, הקפאה, רעידת אדמה ומשימות חובה</div>
     </div>
     <div class="glass resume" id="resume" hidden>
       <p id="resume-text"></p>
@@ -333,13 +345,17 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
         <button type="button" class="btn ghost" id="resume-new">משחק חדש</button>
       </div>
     </div>
-    <button type="button" class="btn big" id="go-setup">מתחילים לשחק</button>
+    <div class="row" style="justify-content:center">
+      <button type="button" class="btn big" id="go-setup">מתחילים לשחק</button>
+      <button type="button" class="btn ghost" id="intro-help">איך משחקים?</button>
+    </div>
   </section>
 
   <section class="screen" id="s-setup">
     <h2 class="title">הכנת המשחק</h2>
     <div class="glass panel">
-      <h3>קבוצות</h3>
+      <h3 id="n-title">קבוצות</h3>
+      <div class="row" id="p-chips" style="margin-bottom:12px"></div>
       <div class="row" id="n-chips"></div>
       <div class="row" id="names" style="margin-top:12px"></div>
     </div>
@@ -371,6 +387,16 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       </div>
       <p class="hint">שאלות שאתם כותבים על המשפחה מקבלות את המקום הגדול ביותר במשחק. אפשר לכתוב שאלה אמריקאית או שאלה פתוחה.</p>
     </div>
+    <div class="glass panel">
+      <h3>משימות חובה</h3>
+      <div class="row" id="d-chips"></div>
+      <div class="row" style="margin-top:12px">
+        <span id="d-count" style="font-size:20px;font-weight:700"></span>
+        <button type="button" class="btn small" id="go-own-dare">+ משימה משלכם</button>
+        <button type="button" class="btn ghost small" id="go-dares">עריכת המשימות</button>
+      </div>
+      <p class="hint" id="d-hint"></p>
+    </div>
     <button type="button" class="btn big" id="start">מתחילים לבנות</button>
   </section>
 
@@ -382,6 +408,17 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       <button type="button" class="btn ghost small" id="back-setup">חזרה</button>
     </div>
     <div class="q-list" id="q-list"></div>
+  </section>
+
+  <section class="screen" id="s-dares">
+    <h2 class="title">משימות החובה</h2>
+    <p class="hint" style="text-align:center;max-width:900px">כאן כל המשימות. משימה שמכבים לא תצא במשחק, ואפשר להדליק אותה שוב. משימות שכתבתם בעצמכם אפשר גם למחוק.</p>
+    <div class="row" style="justify-content:center">
+      <button type="button" class="btn small" id="add-dare">+ משימה חדשה</button>
+      <button type="button" class="btn ghost small" id="reset-dares">להדליק את כל המשימות</button>
+      <button type="button" class="btn ghost small" id="dares-back">חזרה</button>
+    </div>
+    <div class="q-list" id="d-list"></div>
   </section>
 
   <section class="screen" id="s-game">
@@ -424,6 +461,20 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     </div>
   </div>
 
+  <div class="overlay" id="dare" hidden>
+    <div class="glass card mini">
+      <div class="who" id="dare-who"></div>
+      <div class="logo">📜</div>
+      <div class="q">משימת חובה</div>
+      <p id="dare-text"></p>
+      <p class="hint" style="font-size:18px">עשיתם את המשימה? מקבלים קומת בונוס.</p>
+      <div class="row">
+        <button type="button" class="btn big" id="dare-done">עשינו! ✓</button>
+        <button type="button" class="btn ghost" id="dare-skip">מוותרים</button>
+      </div>
+    </div>
+  </div>
+
   <div class="overlay" id="paused" hidden>
     <div class="glass card mini" role="dialog" aria-modal="true" aria-labelledby="paused-title" style="--tc:var(--amber)">
       <div class="logo">⏸</div>
@@ -432,6 +483,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       <div class="row" style="justify-content:center">
         <button type="button" class="btn big" id="unpause">ממשיכים לשחק</button>
         <button type="button" class="btn ghost" id="stop-later">עוצרים, נמשיך אחר כך</button>
+        <button type="button" class="btn ghost" id="paused-help">איך משחקים?</button>
       </div>
     </div>
   </div>
@@ -458,6 +510,77 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       <div class="row">
         <button type="button" class="btn small" id="ed-save">שמירה</button>
         <button type="button" class="btn ghost small" id="ed-cancel">ביטול</button>
+      </div>
+    </div>
+  </div>
+  <div class="overlay" id="dare-ed" hidden>
+    <div class="glass card ed">
+      <h3 style="font-size:28px">משימה חדשה</h3>
+      <label for="de-t">המשימה</label>
+      <textarea class="field" id="de-t" rows="2" maxlength="160" placeholder="למשל: לספר מה הכי אהבתם בשבת הזאת"></textarea>
+      <label>למי המשימה</label>
+      <div class="row" id="de-k"></div>
+      <label>מתי היא יוצאת</label>
+      <div class="row" id="de-g"></div>
+      <p class="err" id="de-err"></p>
+      <div class="row">
+        <button type="button" class="btn small" id="de-save">שמירה</button>
+        <button type="button" class="btn ghost small" id="de-cancel">ביטול</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="overlay" id="help" hidden>
+    <div class="glass card help" role="dialog" aria-modal="true" aria-labelledby="help-title" style="--tc:var(--amber)">
+      <h3 id="help-title">איך משחקים במרוץ המבצרים</h3>
+      <h4>המטרה</h4>
+      <p>כל קבוצה – או כל שחקן, במשחק אישי – בונה מבצר. מי שהמבצר שלו מגיע ראשון לגובה שבחרתם מנצח.</p>
+      <h4>תור</h4>
+      <ul>
+        <li>בכל תור בוחרים קודם איך בונים, ורק אחר כך רואים את השאלה.</li>
+        <li><b>🧱 בנייה בטוחה:</b> תשובה נכונה מוסיפה קומה אחת. טעות לא עולה כלום.</li>
+        <li><b>🚀 בנייה נועזת:</b> תשובה נכונה מוסיפה 2 קומות, אבל טעות מפילה קומה מהמבצר.</li>
+        <li>אם בחרתם זמן לתשובה והזמן נגמר – זה כמו טעות.</li>
+      </ul>
+      <h4>השאלות</h4>
+      <ul>
+        <li><b>שאלה אמריקאית:</b> לוחצים על התשובה (או על המקשים 1 עד 4).</li>
+        <li><b>שאלה פתוחה:</b> כותבים את התשובה ולוחצים "בודקים". המשחק סלחני: לא משנה רווחים, גרשיים, מקפים או ה' ו־ו' בהתחלה, ובמילה של 4 אותיות ומעלה מותרת טעות של אות אחת.</li>
+        <li>השאלות מעורבבות מכל הנושאים: ידע כללי, יהדות ותנ"ך, הלכה, חשבון וסדרות.</li>
+      </ul>
+      <h4>קלפי הפתעה</h4>
+      <p>אחרי תשובה נכונה יוצא לפעמים קלף:</p>
+      <ul>
+        <li>🎁 <b>קומת בונוס</b> – עוד קומה במתנה.</li>
+        <li>🦹 <b>גניבה</b> – בוחרים מבצר ולוקחים ממנו קומה.</li>
+        <li>🌋 <b>רעידת אדמה</b> – המבצר הגבוה ביותר מאבד 2 קומות, גם אם הוא שלכם.</li>
+        <li>❄️ <b>הקפאה</b> – בוחרים קבוצה שמפסידה את התור הבא שלה.</li>
+        <li>🛡️ <b>מגן</b> – חוסם את הקלף הבא שיופנה נגד המבצר שלכם.</li>
+        <li>📜 <b>משימת חובה</b> – עושים את המשימה ולוחצים "עשינו!" כדי לקבל קומת בונוס. אפשר גם לוותר, ואז לא מקבלים כלום.</li>
+      </ul>
+      <h4>משימות חובה</h4>
+      <ul>
+        <li>במשחק קבוצות יוצאות משימות לכל הקבוצה, ובמשחק אישי משימות לשחקן אחד.</li>
+        <li>משימות לגברים או לנשים יוצאות רק כשבוחרים "רק גברים" או "רק נשים ובחורות".</li>
+        <li>ב"עריכת המשימות" אפשר לכבות משימות שלא מתאימות לכם ולהוסיף משימות משלכם. אפשר גם לשחק בלי משימות בכלל.</li>
+      </ul>
+      <h4>הכנת המשחק</h4>
+      <ul>
+        <li><b>בקבוצות או כל אחד לעצמו</b>, כמה משתתפים, ושם לכל אחד.</li>
+        <li><b>גובה המבצר</b> – כמה קומות צריך כדי לנצח.</li>
+        <li><b>זמן לתשובה</b> – או בלי הגבלה.</li>
+        <li><b>רמת השאלות</b> – רגיל (קשות ובינוניות, ועל כל 10 אחת קלה), רק קשה, או רק קל.</li>
+        <li><b>מי משחק</b> – כולם (עם מעט שאלות לגברים), רק גברים (יותר שאלות לגברים), רק נשים ובחורות, או בלי גברים (בשתי האחרונות אין שאלות לגברים).</li>
+        <li><b>שאלות משלכם</b> – "+ שאלות משלכם" פותח מקום לכתוב שאלות על המשפחה, אמריקאיות או פתוחות. הן מקבלות את המקום הגדול ביותר במשחק, ונשארות גם כשמשחזרים את השאלות המקוריות.</li>
+      </ul>
+      <h4>הפסקה והמשך</h4>
+      <ul>
+        <li>⏸ עוצר את המשחק ואת הזמן.</li>
+        <li>"יציאה" שומרת את המשחק. בפעם הבאה שפותחים, אפשר להמשיך בדיוק מאותו מקום.</li>
+        <li>🔊 מדליק ומכבה את הצלילים.</li>
+      </ul>
+      <div class="row" style="justify-content:center;margin-top:18px">
+        <button type="button" class="btn big" id="help-ok">הבנתי</button>
       </div>
     </div>
   </div>
@@ -771,12 +894,94 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     ["men", 3, "מי היתה ילתא?", "אשתו של רב נחמן", "אשתו של רבי מאיר", "בתו של רב חסדא", "אמו של רבא"],
     ["men", 3, "מי היה \"אחר\"?", "אלישע בן אבויה", "בן זומא", "בן עזאי", "רבי טרפון"],
     ["men", 3, "במה מפורסם רבינו גרשום מאור הגולה?", "בחרם על נשיאת שתי נשים", "בחיבור \"משנה תורה\"", "בהדפסת הש\"ס הראשון", "בסידור נוסח הקדיש"]];
+  /* Dares: [team|solo, all|men|women, text, (1: only when only men or only women play)] */
+  var DARES = [["team", "all", "לשיר עכשיו שיר שלם בקול רם – כל הקבוצה ביחד.", 1],
+    ["team", "all", "לומר מחמאה אמיתית לכל אחד מהקבוצה היריבה."],
+    ["team", "all", "לדבר רק בחרוזים עד התור הבא שלכם."],
+    ["team", "all", "נציג אחד עומד על רגל אחת עד התור הבא שלכם."],
+    ["team", "all", "להכין כוס שתייה חמה לכל מי שהיריבים יבחרו."],
+    ["team", "all", "לקום מחר ראשונים ולהכין ארוחת בוקר לכולם."],
+    ["team", "all", "לתת ליריבים לבחור לכם שם קבוצה חדש עד סוף המשחק."],
+    ["team", "all", "לעשות עשר קפיצות במקום – כל הקבוצה."],
+    ["team", "all", "לשבת על הרצפה עד סוף המשחק – כל הקבוצה."],
+    ["team", "all", "לדבר רק בלחש עד התור הבא שלכם."],
+    ["team", "all", "להגיש קינוח לכל הנוכחים – ולאכול אחרונים."],
+    ["team", "all", "לא לומר את המילה \"לא\" עד התור הבא שלכם."],
+    ["team", "all", "לעמוד בשורה לפי הגובה תוך עשר שניות, בלי לדבר."],
+    ["team", "all", "לשיר ביחד \"שיר המעלות\" בקול רם."],
+    ["team", "all", "להחליף מקומות ישיבה עם הקבוצה היריבה עד התור הבא."],
+    ["team", "all", "להמציא סיסמת עידוד לקבוצה ולצעוק אותה ביחד."],
+    ["team", "all", "כל אחד אומר מילה אחת, וביחד בונים משפט שמסביר למה אתם תנצחו."],
+    ["team", "all", "למחוא כפיים בקצב אחיד עשרים פעם – בלי לטעות."],
+    ["team", "all", "לשטוף הערב ביחד את כל הכלים."],
+    ["team", "all", "להכין שתייה לכל הקבוצה היריבה."],
+    ["solo", "all", "לפנות את כל השולחן אחרי הסעודה – בלי עזרה."],
+    ["solo", "all", "לספר בדיחה. אם אף אחד לא צחק – מספרים עוד אחת."],
+    ["solo", "all", "לשטוף הערב את כל הכלים."],
+    ["solo", "all", "לומר את האלף־בית מהסוף להתחלה בלי טעות."],
+    ["solo", "all", "לחקות במשך דקה את ____ (היריבים בוחרים את מי)."],
+    ["solo", "all", "להתקשר עכשיו לסבא או לסבתא ולומר תודה."],
+    ["solo", "all", "להוציא את הזבל כל השבוע – בלי תזכורות."],
+    ["solo", "all", "לומר חמישה דברים טובים על ____ (היריבים בוחרים על מי)."],
+    ["solo", "all", "לוותר הערב על הקינוח."],
+    ["solo", "all", "לספר סיפור מביך מהילדות – עם כל הפרטים."],
+    ["solo", "all", "לסדר מחר את החדר הכי מבולגן בבית."],
+    ["solo", "all", "לחקות חיה עד שמישהו מנחש איזו."],
+    ["solo", "all", "לספר מה הדבר הכי טוב שקרה לך השבוע."],
+    ["solo", "all", "להכין לכל הנוכחים כוס שתייה."],
+    ["solo", "all", "לעשות עשר קפיצות במקום."],
+    ["solo", "all", "לשבת על הרצפה עד התור הבא."],
+    ["solo", "all", "לדבר רק בלחש עד התור הבא."],
+    ["solo", "all", "לשיר בקול רם בית אחד משיר שבת."],
+    ["team", "men", "לשטוף ביחד את כל הכלים של הסעודה."],
+    ["team", "men", "לקפל ביחד את כל הכביסה שמחכה בבית."],
+    ["team", "men", "להכין ביחד את כל הסלטים לשבת הקרובה."],
+    ["team", "men", "לעשות עכשיו עשרים שכיבות סמיכה – כל הקבוצה."],
+    ["team", "men", "לסדר ביחד את ארון הספרים עד מוצאי שבת."],
+    ["solo", "men", "ללמוד מחר בבוקר שלוש שעות ברצף – בלי הפסקת קפה."],
+    ["solo", "men", "לקום מחר לתפילת ותיקין."],
+    ["solo", "men", "להחזיק את התינוק של ____ עשר דקות בסעודה (היריבים בוחרים של מי)."],
+    ["solo", "men", "לומר עכשיו דבר תורה של שתי דקות, בלי הכנה."],
+    ["solo", "men", "להשכיב הערב את הילדים – לבד."],
+    ["solo", "men", "לשיר סולו את \"אשת חיל\" מההתחלה ועד הסוף."],
+    ["solo", "men", "לשטוף את הרצפה ביום שישי הקרוב."],
+    ["solo", "men", "לעשות את הקניות לשבת עם רשימה – ובלי להתקשר לשאול."],
+    ["solo", "men", "לוותר מחר על הקפה של הבוקר."],
+    ["solo", "men", "להגיע מחר לתפילה עשר דקות לפני הזמן."],
+    ["solo", "men", "לבשל מחר ארוחת ערב – וחביתה לא נחשבת!"],
+    ["solo", "men", "לצאת עם הילדים ביום שישי לשעה, כדי שאמא תנוח."],
+    ["solo", "men", "לגהץ לבד את החולצות לשבת."],
+    ["solo", "men", "לומר מחמאה ל____ – מול כולם (היריבים בוחרים למי)."],
+    ["solo", "men", "לעמוד ליד הכיור ולנגב כלים עד שהכול יבש."],
+    ["team", "women", "כל הקבוצה לא קמה מהשולחן להגיש עד סוף הסעודה – רק יושבות ונהנות!"],
+    ["team", "women", "לאפות ביחד עוגה לקבוצה היריבה עד שבת."],
+    ["team", "women", "לא לסדר ולא לנקות כלום עד סוף המשחק – כל הקבוצה, גם אם זה מפריע בעיניים."],
+    ["team", "women", "לארח השבוע ביחד את הקבוצה היריבה לקפה ועוגה."],
+    ["solo", "women", "להחזיק את התינוק של ____ עשר דקות בסעודה (היריבות בוחרות של מי)."],
+    ["solo", "women", "לומר מחר פרק תהילים לפני הקפה הראשון."],
+    ["solo", "women", "לא לדבר מחר בטלפון עד הצהריים."],
+    ["solo", "women", "לשמור ערב אחד על הילדים של ____ (היריבות בוחרות של מי)."],
+    ["solo", "women", "לא להעיר לאף אחד על הבלגן עד סוף היום."],
+    ["solo", "women", "לקלוע צמה למי שהיריבות יבחרו."],
+    ["solo", "women", "לשיר שיר ערש בקול – סולו."],
+    ["solo", "women", "יום בלי קניות: מחר לא קונים שום דבר."],
+    ["solo", "women", "לקום מחר עשרים דקות לפני כולם."],
+    ["solo", "women", "לספר מה הדבר הכי מצחיק שילד אמר לך."],
+    ["solo", "women", "להשאיר את הטלפון בחדר אחר עד מחר בבוקר."],
+    ["solo", "women", "לומר מחמאה לכל אחת מהנוכחות."],
+    ["solo", "women", "להכין מחר לארוחת הערב בדיוק מה שהילדים יבקשו."],
+    ["solo", "women", "ללמוד שתי הלכות שמירת הלשון ביום, כל השבוע."],
+    ["solo", "women", "לוותר על שוקולד עד שבת."],
+    ["solo", "women", "להפריש חלה השבוע ולהתפלל על ____ (היריבות בוחרות על מי)."],
+    ["solo", "women", "לסיים את כל ערמת הגיהוץ עד מחר בערב."],
+    ["solo", "women", "לספר סיפור לפני השינה לכל הילדים – עם קולות."],
+    ["solo", "women", "לשבת מחר חצי שעה עם כוס קפה, בלי לקום לאף אחד."]];
   function defaultQs() {
     return DEFAULTS.map(function (d) { var q = { q: d[2], a: d.slice(3, 7), c: 0, cat: d[0], lv: d[1] }; if (d[7]) q.o = d[7]; return q; });
   }
 
   /* ---------- Saved settings ---------- */
-  var G = { n: 2, teams: NAMES.slice(), goal: 10, secs: 30, qs: null, sound: true, bank: 0, lvl: 'mix', who: 'all' };
+  var G = { n: 2, teams: NAMES.slice(), goal: 10, secs: 30, qs: null, sound: true, bank: 0, lvl: 'mix', who: 'all', play: 'team', dareOn: true, daresOff: [], ownDares: [] };
   try {
     var saved = JSON.parse(localStorage.getItem(KEY) || 'null');
     if (saved && typeof saved === 'object') Object.keys(G).forEach(function (k) { if (saved[k] !== undefined) G[k] = saved[k]; });
@@ -785,6 +990,10 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   if (!Array.isArray(G.teams)) G.teams = NAMES.slice();
   if (['mix', 'hard', 'easy'].indexOf(G.lvl) < 0) G.lvl = 'mix';
   if (['all', 'men', 'women', 'nomen'].indexOf(G.who) < 0) G.who = 'all';
+  if (['team', 'solo'].indexOf(G.play) < 0) G.play = 'team';
+  if (!Array.isArray(G.daresOff)) G.daresOff = [];
+  if (!Array.isArray(G.ownDares)) G.ownDares = [];
+  G.dareOn = G.dareOn !== false;
   if (!Array.isArray(G.qs) || !G.qs.length) G.qs = defaultQs();
   if (G.bank !== 4) { /* first run after a question-bank update: keep only questions the family wrote */
     var OLD = ["כמה רגליים יש לעכביש?", "מהו כוכב הלכת הקרוב ביותר לשמש?", "מהי היבשת הגדולה בעולם?", "כמה צבעים יש בקשת?", "מהו היונק הגדול בעולם?", "מהי עיר הבירה של צרפת?", "כמה דקות יש בשעה וחצי?", "באיזו טמפרטורה מים קופאים?", "כמה שחקנים יש לקבוצת כדורגל על המגרש?", "מהו האוקיינוס הגדול בעולם?", "כמה אותיות יש באלף־בית העברי?", "מהו ההר הגבוה בעולם?", "כמה צלעות יש למשושה?", "איזו חיה מכונה \"ספינת המדבר\"?", "בכמה חודשים בשנה הלועזית יש 31 ימים?", "מהו המקום הנמוך ביותר בעולם?", "איזה איבר מזרים את הדם בגוף?", "מהו הנהר הארוך ביותר שזורם בישראל?", "כמה שבטים היו לעם ישראל?", "מי בנה את התיבה?", "כמה ימים נמשך חג החנוכה?", "באיזה חודש עברי חל פורים?", "כמה חומשים יש בתורה?", "מי היה המלך הראשון של ישראל?", "איזה פרי אינו אחד משבעת המינים?", "כמה נרות מדליקים בסך הכול בחנוכה, בלי השמשים?", "מהו החודש הראשון למניין החודשים בתורה?", "כמה אימהות יש לעם ישראל?", "מה הייתה המכה הראשונה בעשר המכות?", "כמה זה 7 כפול 8?", "כמה זה חצי של רבע של 80?", "כמה אפסים יש במיליון?", "איזו מתכת נוזלית בטמפרטורת החדר?", "מאיזה עץ נושרים בלוטים?", "איזה עוף אינו יכול לעוף?", "כמה לבבות יש לתמנון?", "איזה גז אנחנו צריכים לנשום כדי לחיות?", "באיזו עיר נמצא הכותל המערבי?", "מהי העיר הדרומית ביותר בישראל?", "כמה כנפיים יש לדבורה?", "מה מודד מדחום?", "כמה גרם יש בקילוגרם?", "איזה צבע מתקבל מערבוב של כחול וצהוב?", "כמה שניות יש בחמש דקות?", "מהי החיה המהירה ביותר ביבשה?", "כמה מיתרים יש לכינור?", "מי הוריד את התורה מהר סיני?", "מה שם אביו של יצחק?", "כמה סדרים יש במשנה?"];
@@ -794,7 +1003,16 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     G.bank = 4;
   }
   function save() { try { localStorage.setItem(KEY, JSON.stringify(G)); } catch (e) {} }
-  function teamName(i) { return (G.teams[i] || '').trim() || NAMES[i]; }
+  function teamName(i) { return (G.teams[i] || '').trim() || (G.play === 'solo' ? 'שחקן ' + (i + 1) : NAMES[i]); }
+  /* ---------- Dares ---------- */
+  function allDares() {
+    return DARES.map(function (d) { return { t: d[2], k: d[0], g: d[1], sep: !!d[3] }; })
+      .concat(G.ownDares.map(function (d) { return { t: d.t, k: d.k, g: d.g, own: true }; }));
+  }
+  function separate() { return G.who === 'men' || G.who === 'women'; }
+  /* A dare plays when it is for this kind of game (team/solo), and men's or women's dares only when only they play. */
+  function dareFits(d) { return d.k === G.play && (d.g === 'all' ? !d.sep || separate() : d.g === G.who); }
+  function daresInPlay() { return G.dareOn ? allDares().filter(function (d) { return dareFits(d) && G.daresOff.indexOf(d.t) < 0; }) : []; }
 
   /* ---------- Sound ---------- */
   var ac = null;
@@ -830,7 +1048,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     if (name !== 'end') stopFx();
     if (name === 'intro') renderResume();
   }
-  function stopGame() { run++; clearInterval(timer); $('ask').hidden = true; $('card').hidden = true; $('actions').hidden = true; S.pick = S.mode = S.choose = S.cont = null; }
+  function stopGame() { run++; clearInterval(timer); $('ask').hidden = true; $('card').hidden = true; $('dare').hidden = true; $('actions').hidden = true; S.pick = S.mode = S.choose = S.cont = S.dare = null; }
   /* Leaving the game keeps it saved: the opening screen offers to continue it. */
   function stopForLater() {
     paused = false; $('paused').hidden = true;
@@ -849,7 +1067,15 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     });
   }
   function renderSetup() {
-    chips($('n-chips'), [2, 3, 4], G.n, function (v) { return v + ' קבוצות'; }, function (v) { G.n = v; });
+    var solo = G.play === 'solo';
+    $('n-title').textContent = solo ? 'שחקנים' : 'קבוצות';
+    chips($('p-chips'), ['team', 'solo'], G.play, function (v) { return v === 'team' ? 'משחק קבוצות' : 'משחק אישי – כל אחד לעצמו'; }, function (v) { G.play = v; });
+    chips($('n-chips'), [2, 3, 4], G.n, function (v) { return v + (solo ? ' שחקנים' : ' קבוצות'); }, function (v) { G.n = v; });
+    chips($('d-chips'), [true, false], G.dareOn, function (v) { return v ? 'עם משימות' : 'בלי משימות'; }, function (v) { G.dareOn = v; });
+    var dn = daresInPlay().length;
+    $('d-count').textContent = G.dareOn ? dn + (solo ? ' משימות אישיות' : ' משימות לקבוצה') + ' במשחק' : 'בלי משימות';
+    $('d-hint').textContent = 'אחרי תשובה נכונה יוצאת לפעמים משימה. מי שעושה אותה מקבל קומת בונוס.' +
+      (separate() ? ' במשחק הזה יוצאות גם משימות ' + (G.who === 'men' ? 'לגברים.' : 'לנשים.') : ' משימות לגברים ולנשים יוצאות רק במשחק של רק גברים או רק נשים ובחורות.');
     chips($('r-chips'), [6, 8, 10, 12, 15], G.goal, function (v) { return v + ' קומות'; }, function (v) { G.goal = v; });
     var LVL = { mix: ['רגיל', 'קשות ובינוניות, ועל כל 10 מגיעה אחת קלה.'], hard: ['רק קשה', 'רק שאלות קשות ובינוניות.'], easy: ['רק קל', 'רק שאלות קלות.'] };
     var WHO = { all: ['כולם', 'כל השאלות, כולל מעט שאלות לגברים.'], men: ['רק גברים', 'יותר שאלות לגברים בתמהיל.'],
@@ -864,7 +1090,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       var w = document.createElement('label'); w.className = 'team-in';
       w.innerHTML = '<i style="background:' + COL[i] + '"></i>';
       var inp = document.createElement('input');
-      inp.maxLength = 18; inp.value = G.teams[i] || ''; inp.placeholder = NAMES[i]; inp.setAttribute('aria-label', 'שם קבוצה ' + (i + 1));
+      inp.maxLength = 18; inp.value = G.teams[i] || ''; inp.placeholder = solo ? 'שחקן ' + (i + 1) : NAMES[i]; inp.setAttribute('aria-label', (solo ? 'שם שחקן ' : 'שם קבוצה ') + (i + 1));
       inp.addEventListener('input', function () { G.teams[i] = inp.value; save(); });
       w.appendChild(inp); names.appendChild(w);
     })(i);
@@ -875,6 +1101,71 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   $('go-setup').addEventListener('click', function () { sfx.tick(); goSetup(); });
   $('end-setup').addEventListener('click', goSetup);
   $('back-setup').addEventListener('click', goSetup);
+
+  /* ---------- Dares window ---------- */
+  var GROUPS = [['team', 'all', 'משימות לקבוצה'], ['solo', 'all', 'משימות אישיות'], ['team', 'men', 'לגברים – משימות לקבוצה'],
+    ['solo', 'men', 'לגברים – משימות אישיות'], ['team', 'women', 'לנשים – משימות לקבוצה'], ['solo', 'women', 'לנשים – משימות אישיות']];
+  function renderDares() {
+    var list = $('d-list'), dares = allDares(); list.innerHTML = '';
+    GROUPS.forEach(function (gr) {
+      var mine = dares.filter(function (d) { return d.k === gr[0] && d.g === gr[1]; });
+      if (!mine.length) return;
+      var now = mine.some(dareFits) && G.dareOn;
+      var h = document.createElement('h3'); h.className = 'dare-group';
+      h.innerHTML = esc(gr[2]) + '<small>' + (now ? 'יוצאות במשחק שבחרתם' : 'לא יוצאות במשחק שבחרתם') + '</small>';
+      list.appendChild(h);
+      mine.forEach(function (d) {
+        var off = G.daresOff.indexOf(d.t) >= 0;
+        var row = document.createElement('div'); row.className = 'glass q-item' + (off ? ' off' : '');
+        row.innerHTML = '<div><b>' + esc(d.t) + (d.own ? '<span class="open-tag">שלכם</span>' : '') + (d.sep ? '<span class="open-tag">רק במשחק של רק גברים או רק נשים</span>' : '') + '</b></div>';
+        var tg = document.createElement('button'); tg.type = 'button'; tg.textContent = off ? 'להדליק' : 'לכבות';
+        tg.addEventListener('click', function () {
+          if (off) G.daresOff = G.daresOff.filter(function (t) { return t !== d.t; }); else G.daresOff.push(d.t);
+          save(); sfx.tick(); renderDares();
+        });
+        row.appendChild(tg);
+        if (d.own) {
+          var del = document.createElement('button'); del.type = 'button'; del.textContent = 'מחיקה';
+          del.addEventListener('click', function () {
+            if (!del.dataset.sure) { del.dataset.sure = '1'; del.textContent = 'למחוק?'; return; }
+            G.ownDares = G.ownDares.filter(function (o) { return o.t !== d.t; });
+            G.daresOff = G.daresOff.filter(function (t) { return t !== d.t; }); save(); renderDares();
+          });
+          row.appendChild(del);
+        }
+        list.appendChild(row);
+      });
+    });
+  }
+  function goDares() { renderDares(); show('dares'); }
+  $('go-dares').addEventListener('click', function () { sfx.tick(); goDares(); });
+  $('go-own-dare').addEventListener('click', function () { goDares(); openDareEd(); });
+  $('add-dare').addEventListener('click', openDareEd);
+  $('dares-back').addEventListener('click', goSetup);
+  $('reset-dares').addEventListener('click', function () { G.daresOff = []; save(); sfx.tick(); renderDares(); });
+  var de = { k: 'team', g: 'all' };
+  function syncDareEd() {
+    chips($('de-k'), ['team', 'solo'], de.k, function (v) { return v === 'team' ? 'לכל הקבוצה' : 'לשחקן אחד'; }, function (v) { de.k = v; }, syncDareEd);
+    chips($('de-g'), ['all', 'men', 'women'], de.g, function (v) { return { all: 'בכל משחק', men: 'רק במשחק של גברים', women: 'רק במשחק של נשים' }[v]; }, function (v) { de.g = v; }, syncDareEd);
+  }
+  function openDareEd() {
+    de = { k: G.play, g: separate() ? G.who : 'all' };
+    $('de-t').value = ''; $('de-err').textContent = ''; syncDareEd(); $('dare-ed').hidden = false; $('de-t').focus();
+  }
+  $('de-cancel').addEventListener('click', function () { $('dare-ed').hidden = true; });
+  $('de-save').addEventListener('click', function () {
+    var t = $('de-t').value.trim().replace(/\s+/g, ' ');
+    if (!t) { $('de-err').textContent = 'צריך לכתוב את המשימה.'; return; }
+    if (allDares().some(function (d) { return d.t === t; })) { $('de-err').textContent = 'המשימה הזאת כבר ברשימה.'; return; }
+    G.ownDares.unshift({ t: t, k: de.k, g: de.g }); save(); $('dare-ed').hidden = true; renderDares();
+  });
+
+  /* ---------- Instructions ---------- */
+  function openHelp() { pause(); $('help').hidden = false; $('help-ok').focus(); }
+  $('help-btn').addEventListener('click', openHelp);
+  $('intro-help').addEventListener('click', openHelp);
+  $('paused-help').addEventListener('click', openHelp);
+  $('help-ok').addEventListener('click', function () { $('help').hidden = true; });
 
   /* ---------- Question editor ---------- */
   var ed = { i: -1, c: 0, open: false };
@@ -941,14 +1232,15 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
 
   /* ---------- Game state ---------- */
   // h[t]: floors built. frozen[t]: team skips its next turn. shield[t]: blocks the next card aimed at its tower.
-  var S = { h: [], frozen: [], shield: [], turn: 0, used: [], sinceEasy: 0, pick: null, mode: null, choose: null, cont: null };
+  var S = { h: [], frozen: [], shield: [], turn: 0, used: [], sinceEasy: 0, dares: [], pick: null, mode: null, choose: null, cont: null, dare: null };
   var CARD_CHANCE = 0.45;
   var CARDS = [
     { id: 'bonus', icon: '🎁', name: 'קומת בונוס', text: 'קיבלתם עוד קומה במתנה!', w: 3 },
     { id: 'steal', icon: '🦹', name: 'גניבה', text: 'בחרו מבצר וקחו ממנו קומה.', w: 3 },
     { id: 'quake', icon: '🌋', name: 'רעידת אדמה', text: 'המבצר הגבוה ביותר מאבד 2 קומות – גם אם הוא שלכם!', w: 2 },
     { id: 'freeze', icon: '❄️', name: 'הקפאה', text: 'בחרו קבוצה שתפסיד את התור הבא שלה.', w: 2 },
-    { id: 'shield', icon: '🛡️', name: 'מגן', text: 'המבצר שלכם מוגן מפני הקלף הבא שיופנה נגדו.', w: 2 }
+    { id: 'shield', icon: '🛡️', name: 'מגן', text: 'המבצר שלכם מוגן מפני הקלף הבא שיופנה נגדו.', w: 2 },
+    { id: 'dare', icon: '📜', name: 'משימת חובה', text: '', w: 3 }
   ];
   /* Optional artwork: a picture replaces the drawn graphic it is named after.
      IMG holds the pictures embedded by embed-images.py so this one file works on its own;
@@ -1002,10 +1294,31 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   function floorsText(n) { return n === 1 ? 'קומה אחת' : n + ' קומות'; }
   function rivals(t, test) { var out = []; for (var v = 0; v < G.n; v++) if (v !== t && test(v)) out.push(v); return out; }
   function drawCard() {
-    var total = CARDS.reduce(function (sum, c) { return sum + c.w; }, 0), r = Math.random() * total;
-    for (var i = 0; i < CARDS.length; i++) { r -= CARDS[i].w; if (r < 0) return CARDS[i]; }
-    return CARDS[0];
+    var cards = CARDS.filter(function (c) { return c.id !== 'dare' || daresInPlay().length; });
+    var total = cards.reduce(function (sum, c) { return sum + c.w; }, 0), r = Math.random() * total;
+    for (var i = 0; i < cards.length; i++) { r -= cards[i].w; if (r < 0) return cards[i]; }
+    return cards[0];
   }
+  /* Dares do not repeat until every dare in play came up once. */
+  function nextDare() {
+    var all = daresInPlay(), left = all.filter(function (d) { return S.dares.indexOf(d.t) < 0; });
+    if (!left.length) { S.dares = []; left = all; }
+    var d = left[Math.floor(Math.random() * left.length)];
+    S.dares.push(d.t);
+    return d.t;
+  }
+  /** Shows a dare; resolves true when the team did it. */
+  function showDare(text, team) {
+    return new Promise(function (done) {
+      $('dare').style.setProperty('--tc', COL[team]);
+      $('dare-who').textContent = 'משימה ל' + teamName(team);
+      $('dare-text').textContent = text;
+      $('dare').hidden = false; sfx.good();
+      S.dare = function (did) { S.dare = null; $('dare').hidden = true; sfx.tick(); done(did); };
+    });
+  }
+  $('dare-done').addEventListener('click', function () { if (S.dare) S.dare(true); });
+  $('dare-skip').addEventListener('click', function () { if (S.dare) S.dare(false); });
   /** True when team v's shield absorbs a card aimed at it (the shield is used up). */
   async function blocked(v, t) {
     if (!S.shield[v]) return false;
@@ -1091,6 +1404,12 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
       banner(teamName(v) + ' קפואים לתור אחד!', t);
       await wait(1500);
     },
+    dare: async function (t) {
+      var my = run, did = await showDare(nextDare(), t);
+      if (my !== run) return;
+      if (did) { banner('כל הכבוד! קומת בונוס', t); await addFloors(t, 1); }
+      else { banner('ויתרתם על המשימה', t); await wait(1200); }
+    },
     quake: async function (t) {
       var my = run, max = Math.max.apply(null, S.h);
       $('app').classList.remove('quake'); void $('app').offsetWidth; $('app').classList.add('quake');
@@ -1108,7 +1427,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     stopGame();
     S.h = []; S.frozen = []; S.shield = [];
     for (var t = 0; t < G.n; t++) { S.h.push(0); S.frozen.push(false); S.shield.push(false); }
-    S.turn = 0; S.used = []; S.sinceEasy = 0;
+    S.turn = 0; S.used = []; S.sinceEasy = 0; S.dares = [];
     show('game'); turn();
   }
   function won(t) { return S.h[t] >= G.goal; }
@@ -1135,7 +1454,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     await addFloors(t, bold ? 2 : 1); if (my !== run) return;
     if (!won(t) && Math.random() < CARD_CHANCE) {
       var card = drawCard();
-      await showCard(card, t); if (my !== run) return;
+      if (card.id !== 'dare') await showCard(card, t); if (my !== run) return;
       await EFFECTS[card.id](t); if (my !== run) return;
     }
     if (won(t)) endGame(); else next();
@@ -1237,7 +1556,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   var PKEY = KEY + '-progress';
   function questionsSig() { return JSON.stringify(G.qs).length; }
   function saveProgress() {
-    var p = { h: S.h, frozen: S.frozen, shield: S.shield, turn: S.turn, used: S.used, sinceEasy: S.sinceEasy,
+    var p = { h: S.h, frozen: S.frozen, shield: S.shield, turn: S.turn, used: S.used, sinceEasy: S.sinceEasy, dares: S.dares, play: G.play,
       n: G.n, teams: G.teams.slice(0, G.n), goal: G.goal, secs: G.secs, lvl: G.lvl, who: G.who, sig: questionsSig() };
     try { localStorage.setItem(PKEY, JSON.stringify(p)); } catch (e) {}
   }
@@ -1253,7 +1572,7 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
     $('resume').hidden = !p;
     $('go-setup').classList.toggle('ghost', !!p);
     if (!p) return;
-    var name = function (i) { return (p.teams[i] || '').trim() || NAMES[i]; };
+    var name = function (i) { return (p.teams[i] || '').trim() || (p.play === 'solo' ? 'שחקן ' + (i + 1) : NAMES[i]); };
     $('resume-text').textContent = 'יש משחק שעצרתם באמצע: ' +
       p.h.map(function (h, i) { return name(i) + ' עם ' + floorsText(h); }).join(', ') +
       ' (מנצחים ב־' + p.goal + '). התור של ' + name(p.turn) + '.';
@@ -1261,12 +1580,13 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   $('resume-go').addEventListener('click', function () {
     var p = savedProgress(); if (!p) return renderResume();
     stopGame();
-    G.n = p.n; G.goal = p.goal; G.secs = p.secs; if (p.lvl) G.lvl = p.lvl; if (p.who) G.who = p.who;
+    G.n = p.n; G.goal = p.goal; G.secs = p.secs; if (p.lvl) G.lvl = p.lvl; if (p.who) G.who = p.who; if (p.play) G.play = p.play;
     p.teams.forEach(function (name, i) { G.teams[i] = name; });
     save();
     S.h = p.h; S.frozen = p.frozen; S.shield = p.shield; S.turn = p.turn;
     var same = p.sig === questionsSig(); /* questions were edited meanwhile: start the mix afresh */
     S.used = same && Array.isArray(p.used) ? p.used : []; S.sinceEasy = same ? p.sinceEasy || 0 : 0;
+    S.dares = Array.isArray(p.dares) ? p.dares : [];
     sfx.tick(); show('game'); turn();
   });
   $('resume-new').addEventListener('click', function () { clearProgress(); renderResume(); });
@@ -1285,7 +1605,11 @@ dgpDemo.steps([dgpDemo.click('#go-setup'), dgpDemo.click('#start')]);
   $('pause').addEventListener('click', pause);
   $('unpause').addEventListener('click', unpause);
   $('stop-later').addEventListener('click', stopForLater);
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && paused) unpause(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape') return;
+    if (!$('help').hidden) { $('help').hidden = true; return; }
+    if (paused) unpause();
+  });
   renderResume();
 })();
 </script>
